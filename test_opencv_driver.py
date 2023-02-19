@@ -79,10 +79,10 @@ def detect_edges(frame):
     #upper_yellow = np.array([30, 255, 255])
     #mask2 = cv2.inRange(hsv2, lower_yellow, upper_yellow)
 
-    lower_white = np.array([0, 0, 222], dtype=np.uint8)
-    upper_white = np.array([67, 35, 255], dtype=np.uint8)
+    lower_white = np.array([0, 0, 212], dtype=np.uint8)
+    upper_white = np.array([179, 102, 255], dtype=np.uint8)
     merged_mask = cv2.inRange(hsv2, lower_white, upper_white)
-		
+
     #show_image("blue mask", mask)
     #show_image("yellow mask", mask2)
     
@@ -253,6 +253,13 @@ def stabilize_steering_angle(curr_steering_angle, new_steering_angle, num_of_lan
     else:
         stabilized_steering_angle = new_steering_angle
     logging.info('Proposed angle: %s, stabilized angle: %s' % (new_steering_angle, stabilized_steering_angle))
+
+    BASE_SPEED = 15
+
+    #calculate motor speeds
+    motor_throttle = throttle_angle_to_thrust(BASE_SPEED, stabilized_steering_angle - 90)
+    logging.info(motor_throttle)
+
     return stabilized_steering_angle
 
 
@@ -314,6 +321,19 @@ def make_points(frame, line):
     x2 = max(-width, min(2 * width, int((y2 - intercept) / slope)))
     return [[x1, y1, x2, y2]]
 
+def throttle_angle_to_thrust(r, theta):
+    try:
+        theta = ((theta + 180) % 360) - 180  # normalize value to [-180, 180)
+        r = min(max(0, r), 100)              # normalize value to [0, 100]
+        v_a = r * (45 - theta % 90) / 45          # falloff of main motor
+        v_b = min(100, 2 * r + v_a, 2 * r - v_a)  # compensation of other motor
+        if theta < -90: return -v_b, -v_a
+        if theta < 0:   return -v_a, v_b
+        if theta < 90:  return v_b, v_a
+        return [v_a, -v_b]
+    except:
+        print('error')
+
 
 ############################
 # Test Functions
@@ -329,7 +349,7 @@ def test_photo(file):
 
 def test_video(video_file):
     lane_follower = HandCodedLaneFollower()
-    cap = cv2.VideoCapture(video_file)
+    cap = cv2.VideoCapture(video_file, cv2.CAP_DSHOW)
 
     # skip first second of video.
     for i in range(3):
@@ -363,7 +383,8 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     #test_video("data\\test_lane_video.mp4")
-    test_video(sys.argv[1])
+    #test_video(sys.argv[1])
+    test_video(0)
     #test_photo('/home/pi/DeepPiCar/driver/data/video/car_video_190427_110320_073.png')
     #test_photo(sys.argv[1])
     #test_video(sys.argv[1])
