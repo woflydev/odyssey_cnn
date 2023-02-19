@@ -5,7 +5,7 @@ import math
 import datetime
 import sys
 
-_SHOW_IMAGE = True
+_SHOW_IMAGE = False
 
 
 class HandCodedLaneFollower(object):
@@ -71,18 +71,22 @@ def detect_edges(frame):
     show_image("bluehsv", hsv)
     show_image("yellowhsv", hsv2)
     
-    lower_blue = np.array([30, 40, 0])
-    upper_blue = np.array([150, 255, 255])
-    mask = cv2.inRange(hsv, lower_blue, upper_blue)
+    #lower_blue = np.array([30, 40, 0])
+    #upper_blue = np.array([150, 255, 255])
+    #mask = cv2.inRange(hsv, lower_blue, upper_blue)
     
-    lower_yellow = np.array([20, 100, 100])
-    upper_yellow = np.array([30, 255, 255])
-    mask2 = cv2.inRange(hsv2, lower_yellow, upper_yellow)
+    #lower_yellow = np.array([20, 100, 100])
+    #upper_yellow = np.array([30, 255, 255])
+    #mask2 = cv2.inRange(hsv2, lower_yellow, upper_yellow)
+
+    lower_white = np.array([0, 0, 222], dtype=np.uint8)
+    upper_white = np.array([67, 35, 255], dtype=np.uint8)
+    merged_mask = cv2.inRange(hsv2, lower_white, upper_white)
 		
-    show_image("blue mask", mask)
-    show_image("yellow mask", mask2)
+    #show_image("blue mask", mask)
+    #show_image("yellow mask", mask2)
     
-    merged_mask = cv2.bitwise_or(mask, mask2)
+    #merged_mask = cv2.bitwise_or(mask, mask2)
     #merged_mask = cv2.bitwise_and(img,img, m=m)
     
     show_image("merged", merged_mask)
@@ -92,6 +96,7 @@ def detect_edges(frame):
 
     return edges
 
+"""
 def detect_edges_old(frame):
     # filter for blue lane lines
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -114,12 +119,12 @@ def detect_edges_old(frame):
 
     return edges
 
+"""
 
+# only focus bottom half of the screen
 def region_of_interest(canny):
     height, width = canny.shape
     mask = np.zeros_like(canny)
-
-    # only focus bottom half of the screen
 
     polygon = np.array([[
         (0, height * 1 / 2),
@@ -129,7 +134,7 @@ def region_of_interest(canny):
     ]], np.int32)
 
     cv2.fillPoly(mask, polygon, 255)
-    show_image("mask", mask)
+    show_image("cropped screen", mask)
     masked_image = cv2.bitwise_and(canny, mask)
     return masked_image
 
@@ -287,12 +292,12 @@ def display_heading_line(frame, steering_angle, line_color=(0, 0, 255), line_wid
 
     return heading_image
 
-
+# returns how long line seg is
 def length_of_line_segment(line):
     x1, y1, x2, y2 = line
     return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
-
+# debug switch to not clog the screen with windows
 def show_image(title, frame, show=_SHOW_IMAGE):
     if show:
         cv2.imshow(title, frame)
@@ -337,7 +342,7 @@ def test_video(video_file):
         while cap.isOpened():
             _, frame = cap.read()
             print('frame %s' % i )
-            combo_image= lane_follower.follow_lane(frame)
+            combo_image = lane_follower.follow_lane(frame)
             
             #cv2.imwrite("%s_%03d_%03d.png" % (video_file, i, lane_follower.curr_steering_angle), frame)
             
@@ -357,7 +362,7 @@ def test_video(video_file):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    test_video(0)
+    test_video("data\\test_lane_video.mp4")
     #test_photo('/home/pi/DeepPiCar/driver/data/video/car_video_190427_110320_073.png')
     #test_photo(sys.argv[1])
     #test_video(sys.argv[1])
