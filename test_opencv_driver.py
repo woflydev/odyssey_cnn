@@ -7,7 +7,6 @@ import sys
 
 _SHOW_IMAGE = False
 
-
 class HandCodedLaneFollower(object):
 
     def __init__(self, car=None):
@@ -79,6 +78,7 @@ def detect_edges(frame):
     #upper_yellow = np.array([30, 255, 255])
     #mask2 = cv2.inRange(hsv2, lower_yellow, upper_yellow)
 
+    #this is currently configured for blue and yellow
     lower_white = np.array([0, 0, 212], dtype=np.uint8)
     upper_white = np.array([179, 102, 255], dtype=np.uint8)
     merged_mask = cv2.inRange(hsv2, lower_white, upper_white)
