@@ -83,8 +83,8 @@ def detect_edges(frame):
     #mask2 = cv2.inRange(hsv2, lower_yellow, upper_yellow)
 
     #this is currently configured for blue and yellow
-    lower_white = np.array([23, 0, 0], dtype=np.uint8)
-    upper_white = np.array([179, 255, 136], dtype=np.uint8)
+    lower_white = np.array([0, 0, 217], dtype=np.uint8)
+    upper_white = np.array([71, 118, 255], dtype=np.uint8)
     merged_mask = cv2.inRange(hsv2, lower_white, upper_white)
 
     #show_image("blue mask", mask)
