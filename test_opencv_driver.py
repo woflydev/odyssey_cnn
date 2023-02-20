@@ -4,6 +4,7 @@ import logging
 import math
 import datetime
 import sys
+#from test import move, off
 
 _SHOW_IMAGE = False
 
@@ -26,7 +27,7 @@ class HandCodedLaneFollower(object):
         return final_frame
 
     def steer(self, frame, lane_lines):
-        logging.debug('steering...')
+        logging.debug('Steering Calculations Running...')
         if len(lane_lines) == 0:
             logging.error('No lane lines detected, nothing to do.')
             return frame
@@ -179,7 +180,7 @@ def average_slope_intercept(frame, line_segments):
     for line_segment in line_segments:
         for x1, y1, x2, y2 in line_segment:
             if x1 == x2:
-                logging.info('skipping vertical line segment (slope=inf): %s' % line_segment)
+                logging.info('Skipping vertical line segment (slope=inf): %s' % line_segment)
                 continue
             fit = np.polyfit((x1, x2), (y1, y2), 1)
             slope = fit[0]
@@ -209,12 +210,12 @@ def compute_steering_angle(frame, lane_lines):
         We assume that camera is calibrated to point to dead center
     """
     if len(lane_lines) == 0:
-        logging.info('No lane lines detected, do nothing')
+        logging.info('No lane lines detected.')
         return -90
 
     height, width, _ = frame.shape
     if len(lane_lines) == 1:
-        logging.debug('Only detected one lane line, just follow it. %s' % lane_lines[0])
+        logging.info('Only detected one lane line, following it. %s' % lane_lines[0])
         x1, _, x2, _ = lane_lines[0][0]
         x_offset = x2 - x1
     else:
@@ -260,7 +261,9 @@ def stabilize_steering_angle(curr_steering_angle, new_steering_angle, num_of_lan
 
     #calculate motor speeds
     motor_throttle = throttle_angle_to_thrust(BASE_SPEED, stabilized_steering_angle - 90)
-    logging.info(motor_throttle)
+    logging.info(f"{motor_throttle}\n")
+
+    #MOVE COMMAND HERE
 
     return stabilized_steering_angle
 
@@ -355,6 +358,7 @@ def test_video(video_file):
     try:
         int(sys.argv[1])
         cap = cv2.VideoCapture(video_file, cv2.CAP_DSHOW)
+
     except:
         cap = cv2.VideoCapture(video_file)
 
@@ -362,8 +366,8 @@ def test_video(video_file):
     for i in range(3):
         _, frame = cap.read()
 
-    video_type = cv2.VideoWriter_fourcc(*'XVID')
-    video_overlay = cv2.VideoWriter("%s_overlay.avi" % (video_file), video_type, 20.0, (320, 240))
+    #video_type = cv2.VideoWriter_fourcc(*'XVID')
+    #video_overlay = cv2.VideoWriter("%s_overlay.avi" % (video_file), video_type, 20.0, (320, 240))
     try:
         i = 0
         while cap.isOpened():
@@ -372,7 +376,6 @@ def test_video(video_file):
             combo_image = lane_follower.follow_lane(frame)
             
             #cv2.imwrite("%s_%03d_%03d.png" % (video_file, i, lane_follower.curr_steering_angle), frame)
-            
             #cv2.imwrite("%s_overlay_%03d.png" % (video_file, i), combo_image)
             #video_overlay.write(combo_image)
             cv2.imshow("Road with Lane line", combo_image)
@@ -382,15 +385,18 @@ def test_video(video_file):
                 break
     finally:
         cap.release()
-        video_overlay.release()
+        #video_overlay.release()
         cv2.destroyAllWindows()
+
+        #MOVE OFF COMMAND HERE
+        #move(0, 0)
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    #test_video("data\\test_lane_video.mp4")
     test_video(sys.argv[1])
+    #test_video("data\\test_lane_video.mp4")
     #test_video(0)
     #test_photo(sys.argv[1])
     #test_video(sys.argv[1])
