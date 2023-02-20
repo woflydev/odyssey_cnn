@@ -12,6 +12,8 @@ class HandCodedLaneFollower(object):
     def __init__(self, car=None):
         logging.info('Creating a HandCodedLaneFollower...')
         self.car = car
+
+        #current 90 degree steering angle to eliminate start lag
         self.curr_steering_angle = 90
 
     def follow_lane(self, frame):
@@ -349,7 +351,12 @@ def test_photo(file):
 
 def test_video(video_file):
     lane_follower = HandCodedLaneFollower()
-    cap = cv2.VideoCapture(video_file, cv2.CAP_DSHOW)
+
+    try:
+        int(sys.argv[1])
+        cap = cv2.VideoCapture(video_file, cv2.CAP_DSHOW)
+    except:
+        cap = cv2.VideoCapture(video_file)
 
     # skip first second of video.
     for i in range(3):
@@ -383,8 +390,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     #test_video("data\\test_lane_video.mp4")
-    #test_video(sys.argv[1])
-    test_video(0)
-    #test_photo('/home/pi/DeepPiCar/driver/data/video/car_video_190427_110320_073.png')
+    test_video(sys.argv[1])
+    #test_video(0)
     #test_photo(sys.argv[1])
     #test_video(sys.argv[1])
