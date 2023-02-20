@@ -4,6 +4,7 @@ import logging
 import math
 import datetime
 import sys
+import time
 #from test import move, off
 
 _SHOW_IMAGE = False
@@ -82,8 +83,8 @@ def detect_edges(frame):
     #mask2 = cv2.inRange(hsv2, lower_yellow, upper_yellow)
 
     #this is currently configured for blue and yellow
-    lower_white = np.array([0, 0, 212], dtype=np.uint8)
-    upper_white = np.array([179, 102, 255], dtype=np.uint8)
+    lower_white = np.array([23, 0, 0], dtype=np.uint8)
+    upper_white = np.array([179, 255, 136], dtype=np.uint8)
     merged_mask = cv2.inRange(hsv2, lower_white, upper_white)
 
     #show_image("blue mask", mask)
@@ -260,8 +261,9 @@ def stabilize_steering_angle(curr_steering_angle, new_steering_angle, num_of_lan
     BASE_SPEED = 15
 
     #calculate motor speeds
-    motor_throttle = throttle_angle_to_thrust(BASE_SPEED, stabilized_steering_angle - 90)
-    logging.info(f"{motor_throttle}\n")
+    motor_left = round(throttle_angle_to_thrust(BASE_SPEED, stabilized_steering_angle - 90)[0])
+    motor_right = round(throttle_angle_to_thrust(BASE_SPEED, stabilized_steering_angle - 90)[1])
+    logging.info(f"Left Motor: {motor_left}, Right Motor: {motor_right}\n")
 
     #MOVE COMMAND HERE
 
@@ -366,19 +368,32 @@ def test_video(video_file):
     for i in range(3):
         _, frame = cap.read()
 
-    #video_type = cv2.VideoWriter_fourcc(*'XVID')
-    #video_overlay = cv2.VideoWriter("%s_overlay.avi" % (video_file), video_type, 20.0, (320, 240))
+    frame_width = int(cap.get(3))
+    frame_height = int(cap.get(4))
+    size = (frame_width, frame_height)
+
+    video_type = cv2.VideoWriter_fourcc(*'MJPG')
+    video_overlay = cv2.VideoWriter("%s_overlay.avi" % (video_file), video_type, 10.0, size)
     try:
         i = 0
         while cap.isOpened():
             _, frame = cap.read()
             print('frame %s' % i )
+        
             combo_image = lane_follower.follow_lane(frame)
+            combo_image_resized = cv2.resize(combo_image, (960, 540))
             
             #cv2.imwrite("%s_%03d_%03d.png" % (video_file, i, lane_follower.curr_steering_angle), frame)
             #cv2.imwrite("%s_overlay_%03d.png" % (video_file, i), combo_image)
-            #video_overlay.write(combo_image)
-            cv2.imshow("Road with Lane line", combo_image)
+            video_overlay.write(combo_image)
+
+            cv2.imshow("Road with Lane line", combo_image_resized)
+
+            try:
+                # if passed in time per frame, then execute
+                time.sleep(float(sys.argv[2]))
+            except:
+                pass
 
             i += 1
             if cv2.waitKey(1) & 0xFF == ord('q'):

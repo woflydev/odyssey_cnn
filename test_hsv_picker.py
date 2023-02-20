@@ -9,7 +9,7 @@ def nothing(x):
 image = cv2.imread(sys.argv[1])
 
 # Create a window
-cv2.namedWindow('image')
+slider_window = cv2.namedWindow('image', cv2.WINDOW_NORMAL)
 
 # Create trackbars for color change
 # Hue is from 0-179 for Opencv
@@ -48,6 +48,7 @@ while(True):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, lower, upper)
     result = cv2.bitwise_and(image, image, mask=mask)
+    resultS = cv2.resize(result, (960, 540))
 
     # Print if there is a change in HSV value
     if((phMin != hMin) | (psMin != sMin) | (pvMin != vMin) | (phMax != hMax) | (psMax != sMax) | (pvMax != vMax) ):
@@ -60,4 +61,4 @@ while(True):
         pvMax = vMax
 
     # Display result image
-    cv2.imshow('image', result)
+    cv2.imshow('image', resultS)
