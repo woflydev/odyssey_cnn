@@ -125,6 +125,7 @@ import odyssey_object_cnn
 
 ## File and Folder Structure
 
+```bash
 odyssey_cnn/
 |
 │   .gitignore
@@ -148,6 +149,8 @@ odyssey_cnn/
 └───__pycache__
         test.cpython-39.pyc
         zopencv_driver.cpython-39.pyc
+
+```
 
 
 ## License
