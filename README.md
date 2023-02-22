@@ -125,7 +125,7 @@ import odyssey_object_cnn
 
 ## File and Folder Structure
 
-```bash
+```
 odyssey_cnn/
 |
 │   .gitignore
