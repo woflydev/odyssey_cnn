@@ -9,10 +9,10 @@ import time
 
 _SHOW_IMAGE = False
 
-class HandCodedLaneFollower(object):
+class OpenCV_Driver(object):
 
     def __init__(self, car=None):
-        logging.info('Creating a HandCodedLaneFollower...')
+        logging.info('Creating a OpenCV_Driver...')
         self.car = car
 
         #current 90 degree steering angle to eliminate start lag
@@ -83,13 +83,8 @@ def detect_edges(frame):
     #mask2 = cv2.inRange(hsv2, lower_yellow, upper_yellow)
 
     #this is currently configured for blue and yellow
-<<<<<<< Updated upstream
-    lower_white = np.array([0, 0, 217], dtype=np.uint8)
-    upper_white = np.array([71, 118, 255], dtype=np.uint8)
-=======
     lower_white = np.array([0, 0, 161], dtype=np.uint8)
     upper_white = np.array([179, 255, 255], dtype=np.uint8)
->>>>>>> Stashed changes
     merged_mask = cv2.inRange(hsv2, lower_white, upper_white)
 
     #show_image("blue mask", mask)
@@ -351,7 +346,7 @@ def throttle_angle_to_thrust(r, theta):
 # Test Functions
 ############################
 def test_photo(file):
-    land_follower = HandCodedLaneFollower()
+    land_follower = OpenCV_Driver()
     frame = cv2.imread(file)
     combo_image = land_follower.follow_lane(frame)
     show_image('final', combo_image, True)
@@ -360,7 +355,7 @@ def test_photo(file):
 
 
 def test_video(video_file):
-    lane_follower = HandCodedLaneFollower()
+    lane_follower = OpenCV_Driver()
 
     try:
         int(sys.argv[1])
