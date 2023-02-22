@@ -135,20 +135,21 @@ odyssey_cnn/
 |   [we use a backwards filenaming scheme, with 'z' being the most important files.]
 │
 ├───data
-│   │   [videos for training]
+|   |   
+│   └─── [videos for training]
 │   │
 │   ├───img
-│   │       [images for training and/or hsv values]
+|   |   |
+|   |   └─── [images for training and/or hsv values]
+│   │       
 │   │
-│   └───training_data (gitignore'd due to file sizes)
+│   └─── training_data (gitignore'd due to file sizes)
 │
 ├───models
 |   │
-|   |   [trained neural network models]
+|   └─── [trained neural network models]
 |
-└───__pycache__
-        test.cpython-39.pyc
-        zopencv_driver.cpython-39.pyc
+└───__pycache__ (gitignored'd)
 
 ```
 
