@@ -40,7 +40,7 @@ while(True):
     sMax = cv2.getTrackbarPos('SMax', 'image')
     vMax = cv2.getTrackbarPos('VMax', 'image')
 
-    # Set minimum and maximum HSV values to display
+    # Set minimum and maximum HSV values to displayx
     lower = np.array([hMin, sMin, vMin])
     upper = np.array([hMax, sMax, vMax])
 
