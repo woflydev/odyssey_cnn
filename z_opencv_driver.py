@@ -360,7 +360,7 @@ def test_video(video_file, video_name):
 
     try:
         int(sys.argv[1])
-        cap = cv2.VideoCapture(video_file, cv2.CAP_DSHOW)
+        cap = cv2.VideoCapture(int(video_file), cv2.CAP_DSHOW)
 
     except:
         cap = cv2.VideoCapture(video_file)
