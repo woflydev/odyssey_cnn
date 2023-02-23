@@ -168,6 +168,7 @@ odyssey_cnn/
 - [@woflydev](https://www.github.com/woflydev)
 - [@AwesomeGuy000](https://github.com/awesomeguy000)
 - [@xdBeanjo](https://github.com/xdBeanjo)
+- [@hashtable2020](https://github.com/hashtable2020)
 
 
 ## Acknowledgements
