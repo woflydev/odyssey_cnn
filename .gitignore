@@ -1,6 +1,6 @@
 # ignore training output folder, can generate with zdata
 data/training_data/
-data/*.avi
+data/avi/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

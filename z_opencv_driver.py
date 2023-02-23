@@ -5,6 +5,7 @@ import math
 import datetime
 import sys
 import time
+import os
 #from test import move, off
 
 _SHOW_IMAGE = False
@@ -354,7 +355,7 @@ def test_photo(file):
     cv2.destroyAllWindows()
 
 
-def test_video(video_file):
+def test_video(video_file, video_name):
     lane_follower = OpenCV_Driver()
 
     try:
@@ -373,7 +374,8 @@ def test_video(video_file):
     size = (frame_width, frame_height)
 
     video_type = cv2.VideoWriter_fourcc(*'MJPG')
-    video_overlay = cv2.VideoWriter("%s_overlay.avi" % (video_file), video_type, 10.0, size)
+    video_overlay = cv2.VideoWriter("data\\avi\\%s_overlay.avi" % (video_name), video_type, 10.0, size)
+
     try:
         i = 0
         while cap.isOpened():
@@ -410,7 +412,7 @@ def test_video(video_file):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    test_video(sys.argv[1])
+    test_video(sys.argv[1], sys.argv[2])
     #test_video("data\\test_lane_video.mp4")
     #test_video(0)
     #test_photo(sys.argv[1])

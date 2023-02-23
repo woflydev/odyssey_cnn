@@ -1,7 +1,7 @@
 import cv2
 import sys
 import os
-from zopencv_driver import OpenCV_Driver
+from z_opencv_driver import OpenCV_Driver
 
 def save_image_and_steering_angle(file_path, video_name, output_path):
     lane_follower = OpenCV_Driver()
