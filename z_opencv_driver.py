@@ -411,7 +411,6 @@ def test_video(video_file, video_name):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-
     test_video(sys.argv[1], sys.argv[2])
     #test_video("data\\test_lane_video.mp4")
     #test_video(0)
