@@ -4,6 +4,11 @@
 Visit [our website](https://aboutodyssey.web.app) to learn more about us and the team. We are a passionate group of individuals developing a custom made robot designed to compete with universities around Australia in the [Droid Racing Competition](https://qutrobotics.com/droid-racing-challenge/). The DRC is held annually in July with teams from all around the country flying to Brisbane's QUT Campus to compete. Last year, we finished honourably at 7th, out of 15 national universities, beating both the University of New South Wales (UNSW) and the University of Sydney (USYD), becoming the youngest ever team to compete in DRC history.
 
 
+## License
+
+We operate under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html), which means that any product you make with our code must be open-source and available to the general public.
+
+
 ## Software Tech Stack
 
 **Lane and Object Detection:** OpenCV, Tensorflow, Python, YoloV5
@@ -153,12 +158,6 @@ odyssey_cnn/
 
 ```
 
-
-## License
-
-We operate under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html), which means that any product you make with our code must be open-source and available to the general public.
-
-
 ## Authors
 
 - [@woflydev](https://www.github.com/woflydev)
@@ -174,13 +173,17 @@ We operate under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.htm
  - [The entire Python project](https://python.org)
 
 
-## Contributing
+## Contributing and Forking
 
-While we are all for contributing in open-source projects, we will not be accepting any outside contributions due to the nature of the competition. However, you are welcome to fork the code and make your own modifications. 
+While we are all for contributing in open-source projects, we will not be accepting any outside contributions due to the nature of the competition. However, you are welcome to fork the code and make your own modifications as per usual.
+
+Before making modifications in your own cloned repo or fork, make sure to run `pip install -r requirements.txt` and update `.gitignore` to your own needs.
 
 That said, if you really *really* ***really*** want to contribute, open a pull request and we'll review it.
 
-See `test_opencv_driver.py` for the pure OpenCV implementation. Our convolutional neural network has not been uploaded to the repository as of yet.
+See `z_opencv_driver.py` for the pure OpenCV implementation of our custom lane detection and motor calculation algorithm. Our convolutional neural network's trained model has not been uploaded to the repository as of yet, but the basis for using the model to drive can be found at `z_cnn_driver.py`. Training data was extracted by using `y_data_extractor.py`. To pick the HSV values accurately for the `OpenCV_Driver` class, you can use the `y_hsv_picker.py` tool.
+
+`x_test.py` is only used for testing in a Windows environment when the robot is not available, and simulates the robot's movements through text prompts.
 
 
 ## Feedback
