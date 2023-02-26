@@ -84,8 +84,8 @@ def detect_edges(frame):
     #mask2 = cv2.inRange(hsv2, lower_yellow, upper_yellow)
 
     #this is currently configured for blue and yellow
-    lower_white = np.array([0, 0, 219], dtype=np.uint8)
-    upper_white = np.array([179, 29, 255], dtype=np.uint8)
+    lower_white = np.array([16, 0, 0], dtype=np.uint8)
+    upper_white = np.array([66, 255, 147], dtype=np.uint8)
     merged_mask = cv2.inRange(hsv2, lower_white, upper_white)
 
     #show_image("blue mask", mask)
@@ -132,8 +132,8 @@ def region_of_interest(canny):
     mask = np.zeros_like(canny)
 
     polygon = np.array([[
-        (0, height * 1 / 2),
-        (width, height * 1 / 2),
+        (0, height/ 2),
+        (width, height/ 2),
         (width, height),
         (0, height),
     ]], np.int32)
@@ -177,7 +177,7 @@ def average_slope_intercept(frame, line_segments):
 
     boundary = 1/3
     left_region_boundary = width * (1 - boundary)  # left lane line segment should be on left 2/3 of the screen
-    right_region_boundary = width * boundary # right lane line segment should be on left 2/3 of the screen
+    right_region_boundary = width * boundary # right lane line segment should be on right 2/3 of the screen
 
     for line_segment in line_segments:
         for x1, y1, x2, y2 in line_segment:
