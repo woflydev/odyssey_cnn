@@ -199,4 +199,4 @@ If you have any suggestions for our project and competition, you can reach us  f
 
 ## Support
 
-This software is provided 'AS-IS', under no absolutely no warranty. We are not responsible for any damage, thermonuclear war, or job firings from using this software. We will **not** be providing support for issues that arise within code. This project was coded in Python 3.9.13.
+This software is provided 'AS-IS', under absolutely no warranty. We are not responsible for any damage, thermonuclear war, or job firings from using this software. We will **not** be providing support for issues that arise within code. This project was coded in Python 3.9.13.
