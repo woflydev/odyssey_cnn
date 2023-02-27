@@ -26,8 +26,8 @@ class OpenCVDriver(object):
     def perspective(self, frame, mtx, bounds):
         warpedFrame = cv2.warpPerspective(frame, mtx, frame.shape[:2])
 
-        blankMask = np.zeros(frame.shape[:2], dtype='uint32')
-        cv2.fillPoly(blankMask, pts=[bounds.astype('uint32')], color=255)
+        blankMask = np.zeros(frame.shape[:2], dtype='uint8')
+        cv2.fillPoly(blankMask, pts=[bounds], color=255)
         return cv2.bitwise_and(warpedFrame, warpedFrame, mask=blankMask)
 
     def applyMasks(self, frame, masks):
