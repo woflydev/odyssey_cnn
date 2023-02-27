@@ -1,4 +1,2 @@
-logging
-datetime
 numpy
 opencv-python

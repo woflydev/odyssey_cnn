@@ -147,12 +147,17 @@ odyssey_cnn/
 |   |   |
 |   |   └─── [images for training and/or hsv values]
 │   │       
-│   │
 │   └─── training_data (gitignore'd due to file sizes)
 │
 ├───models
 |   │
-|   └─── [trained neural network models]
+│   ├───nav
+|   |   |
+|   |   └─── [trained models for navigation]
+|   |
+│   ├───obj
+|   |   |
+|   |   └─── [trained models for object detection]
 |
 └───__pycache__ (gitignored'd)
 
@@ -163,6 +168,7 @@ odyssey_cnn/
 - [@woflydev](https://www.github.com/woflydev)
 - [@AwesomeGuy000](https://github.com/awesomeguy000)
 - [@xdBeanjo](https://github.com/xdBeanjo)
+- [@hashtable2020](https://github.com/hashtable2020)
 
 
 ## Acknowledgements

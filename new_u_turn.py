@@ -10,6 +10,8 @@ import json
 masks = np.array([[[0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0]]])
 USE_MATRIX = False
 
+frameDelay = 0.5
+
 class OpenCVDriver(object):
 
     def __init__(self, car=None):
@@ -19,15 +21,14 @@ class OpenCVDriver(object):
         #current 90 degree steering angle to eliminate start lag
         self.curr_steering_angle = 90
 
+
+    # Bounds crop the destination image (a series of points defining a polygon)
     def perspective(self, frame, mtx, bounds):
-        blankMask = np.zeros_like(frame)
-        cv2.fillPoly(blankMask, bounds)
+        warpedFrame = cv2.warpPerspective(frame, mtx, frame.shape[:2])
 
-        newFrame = cv2.bitwise_and(frame, frame, mask=blankMask)
-
-        frameSize = np.amax(bounds, 0) - np.amin(bounds, 0)
-
-        return cv2.warpPerspective(newFrame, mtx, frameSize)
+        blankMask = np.zeros(frame.shape[:2], dtype='uint32')
+        cv2.fillPoly(blankMask, pts=[bounds.astype('uint32')], color=255)
+        return cv2.bitwise_and(warpedFrame, warpedFrame, mask=blankMask)
 
     def applyMasks(self, frame, masks):
         # Allows for multiple masks as an array to be applied then bitwise or.
@@ -69,14 +70,16 @@ def begin_analysis(path=0):
 
     #result = cv2.VideoWriter(path, cv2.VideoWriter_fourcc(*'MJPG'), 10, size)
     
-    srcPoints = np.array([[351, 297], [731, 287], [146, 439], [909, 424]]).astype(np.float32)
-    destPoints = np.array([[118, 25], [938, 17], [105, 418], [900, 436]]).astype(np.float32)
+    srcPoints = np.array([[254, 207], [439, 212], [61, 308], [576, 313]]).astype(np.float32)
+    destPoints = np.array([[249, 11], [433, 12], [254, 342], [439, 344]]).astype(np.float32)
 
     if USE_MATRIX:
-        bounds = [1920, 1080]
+        bounds = np.array([1920, 1080])
         mtx = json.loads(open('matrix.json', 'r').read())
     else: 
-        bounds = (np.amax(destPoints, 0) - np.amin(destPoints, 0)).astype(np.int32)
+        #bounds = (np.amax(destPoints, 0) - np.amin(destPoints, 0)).astype(np.int32)
+        bounds = np.array([[0, 0], [width, 0], [width, height], [0, height]])
+        #bounds = destPoints
         mtx = cv2.getPerspectiveTransform(srcPoints, destPoints)
 
     while True:
@@ -85,10 +88,12 @@ def begin_analysis(path=0):
             break
         ret, frame = cap.read()
         if ret:
+            frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
             cv2.imshow('original', frame)
             birdsEyeFrame = driver.perspective(frame, mtx, bounds)
             cv2.imshow('birds-eye', birdsEyeFrame)
             #result.write(newFrame)
+        time.sleep(frameDelay)
 
 if __name__ == "__main__":
-    begin_analysis('.\data\self_car_data.mp4')
+    begin_analysis('.\data\\test_lane_video.mp4')

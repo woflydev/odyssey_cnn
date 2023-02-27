@@ -54,17 +54,21 @@ criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 chessboardSize = 50
 xBuffer = 50
 yBuffer = 500 # from bottom
-"""xValues = numpy.arange(xBuffer, xBuffer + 7 * chessboardSize, chessboardSize)
+
+
+xValues = numpy.arange(xBuffer, xBuffer + 7 * chessboardSize, chessboardSize)
 yValues = numpy.arange(yBuffer - 7 * chessboardSize, yBuffer, chessboardSize)
 coordinates = numpy.ndarray((7, 7, 2))
-for x in range(7):
-    for y in range(7):
+for y in range(7):
+    for x in range(7):
         coordinates[y][x] = [xValues[x], yValues[y]]
-coordinates = coordinates.reshape((49, 2))"""
-cornerCoordinates = numpy.float32([(xBuffer, yBuffer - CHECKERBOARD[1] * chessboardSize), 
+cornerCoordinates = coordinates.reshape((49, 2))
+
+
+"""cornerCoordinates = numpy.float32([(xBuffer, yBuffer - CHECKERBOARD[1] * chessboardSize), 
     (xBuffer + CHECKERBOARD[0] * chessboardSize, yBuffer - CHECKERBOARD[1] * chessboardSize),
     (xBuffer + CHECKERBOARD[0] * chessboardSize, yBuffer),
-    (xBuffer, yBuffer)])
+    (xBuffer, yBuffer)])"""
 
 cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 frameNum = 0
@@ -94,8 +98,9 @@ while cap.isOpened():
         print("Error!")
 
     if keyPressed == ord("c"):
-        newCorners = numpy.float32([mtx[0], mtx[6], mtx[48], mtx[42]])
-        homMatrix = cv2.getPerspectiveTransform(newCorners, cornerCoordinates)
+        #newCorners = numpy.float32([mtx[0], mtx[6], mtx[48], mtx[42]])
+        newCorners = numpy.float32(mtx)
+        homMatrix = cv2.findHomography(newCorners, cornerCoordinates)
         
         # Writes matrix to file
         outFile = open('matrix.json', 'w')
