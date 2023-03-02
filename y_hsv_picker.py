@@ -6,23 +6,29 @@ import argparse
 def nothing(x):
     pass
 
-parser = argparse.ArgumentParser(description='Uses flags to either use a photo or a video.')
-parser.add_argument('--video')
+"""parser = argparse.ArgumentParser(description='Uses flags to either use a photo or a video.')
+parser.add_argument('--video', action='store_true')
 parser.add_argument('path', nargs=1)
 
 argsParsed = parser.parse_args()
+
 USE_VIDEO = argsParsed.video
+path = str(argsParsed.path)
+print(path)
 print(USE_VIDEO)
 
-cap = cv2.VideoCapture(USE_VIDEO, cv2.CAP_DSHOW) if USE_VIDEO else None
-img = cv2.imread(str(argsParsed.path)) if argsParsed.path != '' else None
+cap = cv2.VideoCapture(path, cv2.CAP_DSHOW) if USE_VIDEO else None
+img = cv2.imread(path) if not USE_VIDEO else None
 
 # Load frames (for image it's a path, but for a video get the current capture)
 def returnFrame(videoBool=USE_VIDEO):
     if videoBool:
         return cap.read()[1]
     else:
-        return img
+        return img"""
+img = cv2.imread(".\data\img\\school_tape4.jpg")
+def returnFrame():
+    return img
 
 # Create a window
 slider_window = cv2.namedWindow('image', cv2.WINDOW_NORMAL)
