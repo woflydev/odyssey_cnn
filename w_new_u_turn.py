@@ -83,29 +83,41 @@ class OpenCVDriver(object):
     def curvature(self, maskedFrame, maxOffset, res):
         """for offset in range(-maxOffset, maxOffset, res):
             pass"""
-        maxHeuristic = {"value": 0, "radius": np.inf}
+        maxHeur = {"value": 0, "intensityArr": [], "frame": [], "radius": np.inf}
         height, width = maskedFrame.shape
-
-        if maxOffset != 0:
-            radius = (maxOffset ** 2 + height ** 2) /(2 * maxOffset)
-        else:
-            radius = np.inf
-
-        correctedFrame = np.zeros((height, width + abs(maxOffset)))
-
-        for row in range(height):
-            calcHeight = height - row - 1
-            calcOffset = self.offset(calcHeight, radius)
-
-            if calcOffset < 0:
-                correctedFrame[row][calcOffset - maxOffset:calcOffset - maxOffset + width] = maskedFrame[row]
+        for offset in range(-maxOffset, maxOffset, res):
+            if offset != 0:
+                radius = (offset ** 2 + height ** 2) /(2 * offset)
             else:
-                correctedFrame[row][calcOffset:calcOffset + width] = maskedFrame[row]
-        return correctedFrame
+                radius = np.inf
+
+            correctedFrame = np.zeros((height, width + abs(offset)))
+
+            for row in range(height):
+                calcHeight = height - row - 1
+                calcOffset = self.offset(calcHeight, radius)
+
+                if calcOffset < 0:
+                    correctedFrame[row][calcOffset - offset:calcOffset - offset + width] = maskedFrame[row]
+                else:
+                    correctedFrame[row][calcOffset:calcOffset + width] = maskedFrame[row]
+
+            currentHeur = self.heuristic(correctedFrame)
+
+            if currentHeur[0] > maxHeur['value']:
+                maxHeur['value'] = currentHeur[0]
+                maxHeur['radius'] = radius
+                maxHeur['intensityArr'] = currentHeur[1]
+                maxHeur['frame'] = correctedFrame
+
+        return maxHeur
     
     # The amount that must be subtracted from an x-value in an image to correct a curve with radius r.
     def offset(self, y, r):
-        return round(r - sign(r) * math.sqrt(r ** 2 - y ** 2))
+        if r == np.inf:
+            return 0
+        else:
+            return round(r - sign(r) * math.sqrt(r ** 2 - y ** 2))
 
     def heuristic(self, frame):
         collapsedArr = np.sum(frame, 0)
@@ -192,8 +204,9 @@ def begin_analysis(path=0):
 
 
             # Below for testing, distorts the current image by a radius equivalent to if the top was shifted left by 100 pixels
-            distortedFrame = driver.curvature(maskedFrame, -100, 0)
-            cv2.imshow('corrected', distortedFrame)
+            curveInfo = driver.curvature(maskedFrame, 100, 1)
+            print(curveInfo['radius'])
+            cv2.imshow('corrected', curveInfo['frame'])
 
             #result.write(newFrame)
         time.sleep(frameDelay)
