@@ -20,7 +20,7 @@ def modifyPoints(event, x, y, flags, param):
         print(f"Destination points: {destPoints}")
 
     
-frameDelay = 0.5
+frameDelay = 0.02
     
 
 srcPoints = np.array([[0, 0], [0, 0], [0, 0], [0, 0]], dtype=np.float32)
@@ -32,7 +32,7 @@ destColour = (0, 255, 0)
 mode = 0
 modes = [ord('1'), ord('2'), ord('3'), ord('4')]
 
-imageScale = 0.5
+imageScale = 1
 
 circleRadius = 10
 circleThickness = 1
@@ -47,7 +47,7 @@ onStart = True
 
 image = cv2.imread(path)"""
 
-path = '.\data\\test_lane_video.mp4'
+path = '.\data\\self_car_data.mp4'
 cap = cv2.VideoCapture(path)
 
 cv2.namedWindow('source')
@@ -87,11 +87,23 @@ while True:
         keyPressed = cv2.waitKey(1)
         if keyPressed in modes:
             mode = int(chr(keyPressed)) - 1
-            print(mode)
         elif keyPressed == ord('m'):
             print(mtx)
         elif keyPressed == ord('q'):
             break
+        elif keyPressed == ord('p'):
+            quitBool = False
+            while True:
+                pauseKey = cv2.waitKey(1)
+                if pauseKey == ord('p'):
+                    break
+                elif pauseKey == ord('q'):
+                    quitBool = True
+                    break
+                elif pauseKey in modes:
+                    mode = int(chr(pauseKey)) - 1
+            if quitBool:
+                break
 
         cv2.imshow('source', srcImage)
         cv2.imshow('destination', destImage)
