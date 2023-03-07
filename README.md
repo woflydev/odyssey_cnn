@@ -131,35 +131,46 @@ import odyssey_object_cnn
 ## File and Folder Structure
 
 ```
-odyssey_cnn/
-|
-│   .gitignore
-│   README.md
-│   requirements.txt
-|
-|   [we use a backwards filenaming scheme, with 'z' being the most important files.]
-│
-├───data
-|   |   
-│   └─── [videos for training]
-│   │
-│   ├───img
-|   |   |
-|   |   └─── [images for training and/or hsv values]
-│   │       
-│   └─── training_data (gitignore'd due to file sizes)
-│
-├───models
-|   │
-│   ├───nav
-|   |   |
-|   |   └─── [trained models for navigation]
-|   |
-│   ├───obj
-|   |   |
-|   |   └─── [trained models for object detection]
-|
-└───__pycache__ (gitignored'd)
+📦 odyssey_cnn/
+├─ .gitignore
+├─ README.md
+├─ data
+│  ├─ img
+│  │  ├─ lane_dashcam_hsv.png
+│  │  ├─ school_tape.jpg
+│  │  ├─ school_tape2.jpg
+│  │  ├─ school_tape3.jpg
+│  │  ├─ school_tape4.jpg
+│  │  ├─ school_tape5.jpg
+│  │  ├─ school_tape6.jpg
+│  │  ├─ self_car_data_hsv.png
+│  │  ├─ test_lane_video2_hsv.png
+│  │  ├─ test_white.jpg
+│  │  └─ video_extract.png
+│  ├─ lane_dashcam.mp4
+│  ├─ self_car_data.mp4
+│  └─ test_lane_video.mp4
+├─ lane_dashcam_hsv.png
+├─ models
+│  ├─ nav
+│  │  └─ train.ipynb
+│  └─ obj
+│     └─ object_model_placeholder
+├─ opencv_learning
+│  └─ color.py
+├─ requirements.txt
+├─ w_edge_calibration.py
+├─ w_newChessCalibrator.py
+├─ w_new_u_turn.py
+├─ w_pickTransform.py
+├─ w_plot.py
+├─ x_edge_picker.py
+├─ x_test.py
+├─ y_data_extractor.py
+├─ y_hsv_picker.py
+├─ y_test_image_processing.py
+├─ z_cnn_driver.py
+└─ z_opencv_driver.py
 
 ```
 
