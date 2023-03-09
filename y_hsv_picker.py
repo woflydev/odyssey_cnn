@@ -26,9 +26,11 @@ def returnFrame(videoBool=USE_VIDEO):
         return cap.read()[1]
     else:
         return img"""
-img = cv2.imread(".\data\img\\video_extract.png")
+img = cv2.imread(".\data\img\\birds_eye_mask.jpg")
+#cap = cv2.VideoCapture('.\data\laneData.mp4')
 def returnFrame():
     return img
+    #return cap.read()[1]
 
 # Create a window
 slider_window = cv2.namedWindow('image', cv2.WINDOW_NORMAL)
