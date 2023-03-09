@@ -47,7 +47,7 @@ onStart = True
 
 image = cv2.imread(path)"""
 
-path = '.\data\\self_car_data.mp4'
+path = '.\data\\test_lane_video.mp4'
 cap = cv2.VideoCapture(path)
 
 cv2.namedWindow('source')
