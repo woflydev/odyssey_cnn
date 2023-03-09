@@ -180,7 +180,7 @@ import odyssey_object_cnn
 - [@AwesomeGuy000](https://github.com/awesomeguy000)
 - [@xdBeanjo](https://github.com/xdBeanjo)
 - [@hashtable2020](https://github.com/hashtable2020)
-
+- [@echan103](https://github.com/echan103)
 
 ## Acknowledgements
 
@@ -190,7 +190,8 @@ import odyssey_object_cnn
  - [The entire Python project](https://python.org)
 
 
-## Contributing and Forking
+## 
+ing and Forking
 
 While we are all for contributing in open-source projects, we will not be accepting any outside contributions due to the nature of the competition. However, you are welcome to fork the code and make your own modifications as per usual.
 
