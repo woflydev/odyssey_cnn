@@ -80,7 +80,7 @@ class OpenCVDriver(object):
                 cv2.line(grayFrame, pt1, pt2, (0,0,255), 2, cv2.LINE_AA)
         return coords, grayFrame"""
 
-    def distortFrame(self, frame, radius, log=False):
+    def distortFrame(self, frame, radius, isMask=True, log=False):
         if radius == np.inf or radius == -np.inf:
             return frame
         else:
@@ -100,7 +100,7 @@ class OpenCVDriver(object):
                     print(f"Height: {calcHeight}, Offset: {calcOffset}")
 
                 correctedFrame[row][calcOffset - min(offset, 0):calcOffset - min(offset, 0) + width] = frame[row]
-            return correctedFrame
+            return correctedFrame.astype('uint8') if isMask else correctedFrame.astype('bool')
     
     def curvature(self, maskedFrame, maxOffset, res):
         """for offset in range(-maxOffset, maxOffset, res):
@@ -123,6 +123,9 @@ class OpenCVDriver(object):
                 maxHeur['intensityArr'] = currentHeur[1]
                 maxHeur['offset'] = offset
                 maxHeur['frame'] = correctedFrame
+
+            #print(f"Radius: {radius}, Heuristic: {currentHeur[0]}")
+            #print(f"Collapsed array: {currentHeur[1]}")
         return maxHeur
     
     # The amount that must be added from an x-value in an image to correct a curve with radius r.
@@ -133,25 +136,28 @@ class OpenCVDriver(object):
             return sign(r) * round(abs(r) - math.sqrt(r ** 2 - y ** 2))
 
     def heuristic(self, frame):
-        collapsedArr = np.sum(frame, 0)
-        diffArr = np.sort(np.abs(np.ediff1d(collapsedArr)))
+        collapsedArr = np.sum(frame / 255, 0)
+        #print(collapsedArr)
+        diffArr = np.abs(np.ediff1d(collapsedArr))
+        #print(diffArr)
+        diffArr = np.sort(diffArr)
+        
 
         # Sums the greatest four differences (which assumes there are two lane lines for greater precision)
         # Divides by 100 (arbitrary) to make numbers more readable
         diffVal = np.sum(diffArr[-4:]) / 100
         return diffVal, collapsedArr
     
-    def radiusToThrust(self, radius, speed, width: 100):
-        if abs(radius) == width / 2:
+    def radiusToThrust(self, radius, speed, width=100):
+        if radius == np.inf:
+            return [speed, speed]
+        elif abs(radius) == width / 2:
             if radius < 0:
                 return [0, speed]
             return [speed, 0]
         else:
             ratio = math.sqrt((radius - width / 2) / (radius + width / 2))
-            return speed * np.array(ratio, 1/ratio)
-    
-    def followLanes(self, curves, frame):
-        pass
+            return speed * np.array([ratio, 1/ratio])
 
     def steer(self, params, frame):
         pass
@@ -169,6 +175,7 @@ def printCoordinates(event, x, y, flags, params):
 def begin_analysis(path=0):
     cap = cv2.VideoCapture(path)
     driver = OpenCVDriver()
+    #np.set_printoptions(threshold=sys.maxsize)
 
     width = int(cap.get(3))
     height = int(cap.get(4))
@@ -195,7 +202,7 @@ def begin_analysis(path=0):
     destPoints = np.array([[96, 30], [238, 30], [230, 144], [98, 150]]).astype(np.float32)
     corners = np.array([])"""
 
-    createWindows(['original', 'birds-eye', 'masked', 'corrected', 'birdsEyeLanes'])
+    createWindows(['original', 'birds-eye', 'warp-test', 'masked', 'corrected', 'birdsEyeLanes'])
 
     # Allows easier cropping
     #cv2.setMouseCallback('birds-eye', printCoordinates)
@@ -207,7 +214,7 @@ def begin_analysis(path=0):
         rvsMtx = json.loads(open('matrix.json', 'r').read())[1]
     else: 
         #bounds = (np.amax(destPoints, 0) - np.amin(destPoints, 0)).astype(np.int32)
-        bounds = (width, height)
+        bounds = size
         #bounds = destPoints
         mtx = cv2.getPerspectiveTransform(srcPoints, destPoints)
         rvsMtx = cv2.getPerspectiveTransform(destPoints, srcPoints)
@@ -224,36 +231,45 @@ def begin_analysis(path=0):
             #birdsEyeFrame = driver.distortFrame(birdsEyeFrame, 500)
             cv2.imshow('birds-eye', birdsEyeFrame)
 
+            warpedBounds = birdsEyeFrame.shape
+
+            #print(f"Birds-eye frame: {birdsEyeFrame}")
+            #print(f"Warped frame: {warpedFrame}")
+            #cv2.imshow('warp-test', warpedFrame)
+
             maskedFrame = driver.applyMasks(birdsEyeFrame, masks)
-            maskedFrame = driver.distortFrame(maskedFrame, 500)
+            #maskedFrame = driver.distortFrame(maskedFrame, 500)
             cv2.imshow('masked', maskedFrame)
 
-            # Below lines of code to be replaced by RALPH code
-            """lines, edgedFrame = driver.findEdges(maskedFrame)
-            cv2.imshow('edges', edgedFrame)"""
 
-
-            # Tries distortions from -100 pixels to 100 pixels with a resolution of 1 pixel.
+            # Tries distortions from -100 pixels to 100 pixels with a resolution of 5 pixels.
             curveInfo = driver.curvature(maskedFrame, 100, 1)
             #print(curveInfo['radius'])
-            cv2.imshow('corrected', curveInfo['frame'])
+            if curveInfo['radius'] != np.inf:
+                radius = int(curveInfo["radius"])
+            else:
+                radius = np.inf
+            
+            correctedFrame = driver.distortFrame(birdsEyeFrame, -radius)
+            cv2.imshow('corrected', correctedFrame)
 
             birdsEyeLanes = np.copy(birdsEyeFrame)
-            radius = int(curveInfo["radius"])
 
             # Two brightest points (assumed that they are lanes)
-            laneLocations = np.argsort(curveInfo['intensityArr'])[-2:] - min(curveInfo['offset'], 0)
-            print(laneLocations)
+            laneLocations = np.argsort(curveInfo['intensityArr'])[-2:] - max(curveInfo['offset'], 0)
             if curveInfo["radius"] == np.inf:
                 for lane in laneLocations:
-                    cv2.line(birdsEyeLanes, (lane, 0), (lane, height), lineColour, lineThickness)
+                    cv2.line(birdsEyeLanes, (lane, 0), (lane, warpedBounds[0]), lineColour, lineThickness)
             else:
                 for lane in laneLocations:
-                    birdsEyeLanes = cv2.circle(birdsEyeLanes, (int(lane + radius), height), abs(radius), lineColour, lineThickness)    
+                    birdsEyeLanes = cv2.circle(birdsEyeLanes, (int(lane + radius), warpedBounds[0]), abs(radius), lineColour, lineThickness)    
 
             cv2.imshow('birdsEyeLanes', birdsEyeLanes)
 
-            print(driver.radiusToThrust(curveInfo['radius'], 100))
+
+            print(f"Radius of curvature: {radius}")
+            print(f"Lane locations: {laneLocations}")
+            print(f"Motor speeds: {driver.radiusToThrust(curveInfo['radius'], 50)}")
             #result.write(newFrame)
         time.sleep(frameDelay)
 
