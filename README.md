@@ -181,6 +181,7 @@ import odyssey_object_cnn
 - [@xdBeanjo](https://github.com/xdBeanjo)
 - [@hashtable2020](https://github.com/hashtable2020)
 - [@echan103](https://github.com/echan103)
+- [@kelco-chan](https://github.com/kelco-chan)
 
 ## Acknowledgements
 
