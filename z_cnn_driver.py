@@ -12,6 +12,7 @@ class CNN_Driver(object):
 
     def __init__(self,
                  car=None,
+                 # this doesn't exist yet
                  model_path='models\\odyssey_cnn.h5'):
         logging.info('Creating a CNN_Driver...')
 
