@@ -35,12 +35,11 @@ pip install -r requirements.txt
 
 Usage of our custom motor controller based on the Raspberry Pi's GPIO is as follows:
 ```python
-from motors import move, off
-import time
+from driver/driver import move, off
 
-# 'move' takes a value out of 100.
-move(50, 50)
-time.sleep(1)
+# 'move' takes a value between -100 and 100, and an optional timeout value in ms.
+move(50, 50, 1000)
+move(10, 10)
 
 # shorthand for move(0, 0)
 off()
