@@ -67,7 +67,9 @@ def move(LIN, RIN, timeout=0):
     else:
         motorRA.duty_cycle = 0
         motorRB.duty_cycle = -R
-    sleep(timeout * 1000)
+    if timeout > 0:
+        sleep(timeout * 1000)
+        off()
 
 # testing functions
 # Path: driver\driver_test.py
