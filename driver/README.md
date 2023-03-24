@@ -8,7 +8,7 @@
 All three of the above functions pull the signals for the motor drivers low, causing them to coast.
 
 ## Moving
-`move(L, R, `<em>`timeout`</em>`)`
+`move(L,R,timeout)`
 
 L (int) – Left motor drive value (-100 to 100)
 
