@@ -1,2 +1,4 @@
 numpy
 opencv-python
+adafruit-blinka
+adafruit-circuitpython-pca9685
