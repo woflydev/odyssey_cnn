@@ -4,7 +4,7 @@ from adafruit_pca9685 import PCA9685
 from time import sleep
 
 PWM_FREQ = 1000      # (Hz) max is 1.5 kHz
-MAP_CONST = 655.35   # 65535 / 100
+MAP_CONST = 595.77   # 65535 / 110 to limit speed below 100% duty cycle
 
 i2c_bus = busio.I2C(SCL, SDA)
 
