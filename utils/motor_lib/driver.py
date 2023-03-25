@@ -50,6 +50,28 @@ def ebrake():
     motorRA.duty_cycle = 65535
     motorRB.duty_cycle = 65535
 
+# forward function
+def fwd(speed, timeout=0):
+    off()
+    motorLA.duty_cycle = int(speed * MAP_CONST)
+    motorLB.duty_cycle = 0
+    motorRA.duty_cycle = int(speed * MAP_CONST)
+    motorRB.duty_cycle = 0
+    if timeout > 0:
+        sleep(timeout * 1000)
+        off()
+
+# reverse function
+def rev(speed, timeout=0):
+    off()
+    motorLA.duty_cycle = 0
+    motorLB.duty_cycle = int(speed * MAP_CONST)
+    motorRA.duty_cycle = 0
+    motorRB.duty_cycle = int(speed * MAP_CONST)
+    if timeout > 0:
+        sleep(timeout * 1000)
+        off()
+
 # input -100 to 100 left and right sides
 def move(LIN, RIN, timeout=0):
     L = int(LIN * MAP_CONST)  # map values to 0-65535
