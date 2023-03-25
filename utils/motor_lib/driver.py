@@ -2,9 +2,12 @@ from board import SCL, SDA
 import busio
 from adafruit_pca9685 import PCA9685
 from time import sleep
+from math import abs
 
 PWM_FREQ = 1000      # (Hz) max is 1.5 kHz
 MAP_CONST = 595.77   # 65535 / 110 to limit speed below 100% duty cycle
+HALF_WIDTH = 0.1          # Half of the width of droid, in metres
+MAX_CENT_ACC = 30000 # Maximum "centripetal acceleration" the robot is allowed to undergo. UNITS ARE DODGY, MUST BE DETERMIEND BY EXPERIMENTATION
 
 i2c_bus = busio.I2C(SCL, SDA)
 
@@ -71,6 +74,19 @@ def rev(speed, timeout=0):
     if timeout > 0:
         sleep(timeout * 1000)
         off()
+# Write motor values for a turn, where a positive radius denotes a right turn (think +x), and negatvie radius defines left turn
+def turn(speed: float, radius: float, timeout=0):
+    r = abs(radius);
+    if(speed < 0 or speed > 100):
+        raise Exception(f"[MOTOR]: Invalid turn speed {speed}")
+    if( r == 0 or speed * speed / r > MAX_CENT_ACC):
+        print("[MOTOR]: Ignored attempt to turn at speed {speed} and radius {r} due to potential slipping.")
+        return # Should I raise an exception instead?
+    omega = speed / r
+    if(radius > 0):
+        move(omega * (r + HALF_WIDTH), omega * (r - HALF_WIDTH), timeout)
+    elif(radius == 0):
+        move(omega * (r - HALF_WIDTH), omega * (r + HALF_WIDTH), timeout)
 
 # input -100 to 100 left and right sides
 def move(LIN, RIN, timeout=0):
