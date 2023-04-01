@@ -2,10 +2,10 @@ from board import SCL, SDA
 import busio
 from adafruit_pca9685 import PCA9685
 from time import sleep
-from math import abs
+#from math import abs
 
 PWM_FREQ = 1000      # (Hz) max is 1.5 kHz
-MAP_CONST = 595.77   # 65535 / 110 to limit speed below 100% duty cycle
+MAP_CONST = 65535 / 120   # 65535 / 110 to limit speed below 100% duty cycle
 HALF_WIDTH = 0.1          # Half of the width of droid, in metres
 MAX_CENT_ACC = 30000 # Maximum "centripetal acceleration" the robot is allowed to undergo. UNITS ARE DODGY, MUST BE DETERMIEND BY EXPERIMENTATION
 
@@ -24,10 +24,10 @@ pca.channels[1].duty_cycle = 0
 pca.channels[2].duty_cycle = 0
 pca.channels[3].duty_cycle = 0
 
-motorLA = pca.channels[0]
-motorLB = pca.channels[1]
-motorRA = pca.channels[2]
-motorRB = pca.channels[3]
+motorLA = pca.channels[3]
+motorLB = pca.channels[2]
+motorRA = pca.channels[1]
+motorRB = pca.channels[0]
 
 # Path: driver\driver.py
 
@@ -55,7 +55,6 @@ def ebrake():
 
 # forward function
 def fwd(speed, timeout=0):
-    off()
     motorLA.duty_cycle = int(speed * MAP_CONST)
     motorLB.duty_cycle = 0
     motorRA.duty_cycle = int(speed * MAP_CONST)
@@ -93,7 +92,7 @@ def turn(speed: float, radius: float, timeout=0):
 def move(LIN, RIN, timeout=0):
     L = int(LIN * MAP_CONST)  # map values to 0-65535
     R = int(RIN * MAP_CONST)
-    off()
+    
     if L > 0:
         motorLA.duty_cycle = L
         motorLB.duty_cycle = 0
@@ -107,7 +106,7 @@ def move(LIN, RIN, timeout=0):
         motorRA.duty_cycle = 0
         motorRB.duty_cycle = -R
     if timeout > 0:
-        sleep(timeout * 1000)
+        sleep(timeout / 1000)
         off()
 
 # Drive pins other than motor pins
