@@ -60,7 +60,7 @@ def fwd(speed, timeout=0):
     motorRA.duty_cycle = int(speed * MAP_CONST)
     motorRB.duty_cycle = 0
     if timeout > 0:
-        sleep(timeout * 1000)
+        sleep(timeout / 1000)
         off()
 
 # reverse function
@@ -71,12 +71,12 @@ def rev(speed, timeout=0):
     motorRA.duty_cycle = 0
     motorRB.duty_cycle = int(speed * MAP_CONST)
     if timeout > 0:
-        sleep(timeout * 1000)
+        sleep(timeout / 1000)
         off()
 
 # Write motor values for a turn, where a positive radius denotes a right turn (think +x), and negatvie radius defines left turn
 def turn(speed: float, radius: float, timeout=0):
-    r = abs(radius);
+    r = abs(radius)
     if(speed < 0 or speed > 100):
         raise Exception(f"[MOTOR]: Invalid turn speed {speed}")
     if( r == 0 or speed * speed / r > MAX_CENT_ACC):
@@ -92,7 +92,7 @@ def turn(speed: float, radius: float, timeout=0):
 def move(LIN, RIN, timeout=0):
     L = int(LIN * MAP_CONST)  # map values to 0-65535
     R = int(RIN * MAP_CONST)
-    
+
     if L > 0:
         motorLA.duty_cycle = L
         motorLB.duty_cycle = 0
