@@ -74,6 +74,7 @@ def rev(speed, timeout=0):
     if timeout > 0:
         sleep(timeout * 1000)
         off()
+
 # Write motor values for a turn, where a positive radius denotes a right turn (think +x), and negatvie radius defines left turn
 def turn(speed: float, radius: float, timeout=0):
     r = abs(radius);
@@ -108,3 +109,11 @@ def move(LIN, RIN, timeout=0):
     if timeout > 0:
         sleep(timeout * 1000)
         off()
+
+# Drive pins other than motor pins
+def drivePin(pin, val):
+    if pin != 0 and pin != 1 and pin != 2 and pin != 3:
+        raise Exception(f"Pin {pin} is used for motors.")
+    else:
+        pca.channels[pin].duty_cycle = val / 100 * 65535
+        print(f"Pin {pin} set to {val}%")
