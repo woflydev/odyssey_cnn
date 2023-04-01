@@ -114,5 +114,5 @@ def drivePin(pin, val):
     if pin == 0 or pin == 1 or pin == 2 or pin == 3:
         raise Exception(f"Pin {pin} is used for motors.")
     else:
-        pca.channels[pin].duty_cycle = val / 100 * 65535
+        pca.channels[pin].duty_cycle = int(val / 100 * 65535)
         print(f"Pin {pin} set to {val}%")
