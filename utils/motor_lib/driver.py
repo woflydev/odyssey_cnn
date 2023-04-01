@@ -111,7 +111,7 @@ def move(LIN, RIN, timeout=0):
 
 # Drive pins other than motor pins
 def drivePin(pin, val):
-    if pin != 0 and pin != 1 and pin != 2 and pin != 3:
+    if pin == 0 or pin == 1 or pin == 2 or pin == 3:
         raise Exception(f"Pin {pin} is used for motors.")
     else:
         pca.channels[pin].duty_cycle = val / 100 * 65535
