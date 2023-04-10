@@ -78,6 +78,8 @@ def fwd(speed, timeout=0):
     motorLB.duty_cycle = 0
     motorRA.duty_cycle = int(speed * MAP_CONST)
     motorRB.duty_cycle = 0
+    motorENL.duty_cycle = 65535
+    motorENR.duty_cycle = 65535
     if timeout > 0:
         sleep(timeout / 1000)
         off()
@@ -88,6 +90,8 @@ def rev(speed, timeout=0):
     motorLB.duty_cycle = int(speed * MAP_CONST)
     motorRA.duty_cycle = 0
     motorRB.duty_cycle = int(speed * MAP_CONST)
+    motorENL.duty_cycle = 65535
+    motorENR.duty_cycle = 65535
     if timeout > 0:
         sleep(timeout / 1000)
         off()
@@ -123,6 +127,9 @@ def move(LIN, RIN, timeout=0):
     else:
         motorRA.duty_cycle = 0
         motorRB.duty_cycle = -R
+    
+    motorENL.duty_cycle = 65535
+    motorENR.duty_cycle = 65535
     if timeout > 0:
         sleep(timeout / 1000)
         off()
