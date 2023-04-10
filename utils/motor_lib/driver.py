@@ -25,10 +25,10 @@ pca.channels[1].duty_cycle = 0
 pca.channels[2].duty_cycle = 0
 pca.channels[3].duty_cycle = 0
 
-motorLA = pca.channels[3]
-motorLB = pca.channels[2]
-motorRA = pca.channels[1]
-motorRB = pca.channels[0]
+motorLA = pca.channels[2]
+motorLB = pca.channels[3]
+motorRA = pca.channels[0]
+motorRB = pca.channels[1]
 
 motorENL = pca.channels[4]
 motorENR = pca.channels[5]
