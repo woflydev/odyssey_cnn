@@ -24,7 +24,7 @@ while True:
         left = 0
         right = 0
         print(f'OFF: [{left}, {right}]')
-        off()
+        brake()
 
     if ds.state.cross == 1:            # exit with cross
         left = 0
