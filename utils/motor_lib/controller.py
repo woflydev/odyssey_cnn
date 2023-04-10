@@ -26,7 +26,7 @@ while True:
         print(f'Brake: [{left}, {right}]')
         brake()
 
-    if ds.state.R2 == 1:              # coast with R2
+    if ds.state.R2 > 16:              # coast with R2
         left = 0
         right = 0
         print(f'Coast: [{left}, {right}]')
