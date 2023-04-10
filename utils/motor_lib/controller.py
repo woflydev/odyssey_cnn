@@ -20,11 +20,17 @@ while True:
     right = (ds.state.RY / 128 * 100) * LIMIT
     light = ds.state.L1 * 100 # ds.state.L2 ** 2 / (16384 / 25) # gradual control
 
-    if ds.state.R1 == 1:              # stop with R1
+    if ds.state.R1 == 1:              # brake with R1
         left = 0
         right = 0
-        print(f'OFF: [{left}, {right}]')
+        print(f'Brake: [{left}, {right}]')
         brake()
+
+    if ds.state.R2 == 1:              # coast with R2
+        left = 0
+        right = 0
+        print(f'Coast: [{left}, {right}]')
+        off()
 
     if ds.state.cross == 1:            # exit with cross
         left = 0
