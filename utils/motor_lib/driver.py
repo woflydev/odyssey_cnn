@@ -5,9 +5,10 @@ from time import sleep
 #from math import abs
 
 PWM_FREQ = 1000      # (Hz) max is 1.5 kHz
-MAP_CONST = 65535 / 120   # 65535 / 110 to limit speed below 100% duty cycle
+MAP_CONST = 65535 / 120   # 65535 / 120 to limit speed below 100% duty cycle
 HALF_WIDTH = 0.1          # Half of the width of droid, in metres
 MAX_CENT_ACC = 30000 # Maximum "centripetal acceleration" the robot is allowed to undergo. UNITS ARE DODGY, MUST BE DETERMIEND BY EXPERIMENTATION
+MAX_SPEED = MAP_CONST * 100 / 65535  # (percent) max speed of motors
 
 i2c_bus = busio.I2C(SCL, SDA)
 
@@ -29,10 +30,18 @@ motorLB = pca.channels[2]
 motorRA = pca.channels[1]
 motorRB = pca.channels[0]
 
-# Path: driver\driver.py
+motorENL = pca.channels[4]
+motorENR = pca.channels[5]
 
+print("Motor driver initialized. \n path: utils\motor_lib\driver.py \n PWM frequency: " + str(PWM_FREQ) + "Hz \n Max speed: " + str(MAX_SPEED) + "%")
+
+# Path: utils\motor_lib\driver.py
 # off/coast/stop are the same
 def off():
+    # Enable pins are low during off() to coast
+    motorENL.duty_cycle = 0
+    motorENR.duty_cycle = 0
+
     motorLA.duty_cycle = 0
     motorLB.duty_cycle = 0
     motorRA.duty_cycle = 0
@@ -43,6 +52,16 @@ def stop():
     
 def coast():
     off()
+
+def brake():
+    off()
+    motorLA.duty_cycle = 0
+    motorLB.duty_cycle = 0
+    motorRA.duty_cycle = 0
+    motorRB.duty_cycle = 0
+    # Enable pins are high during brake() to brake
+    motorENL.duty_cycle = 65535
+    motorENR.duty_cycle = 65535
 
 # brakes after 1.5s of coasting
 def ebrake():
@@ -65,7 +84,6 @@ def fwd(speed, timeout=0):
 
 # reverse function
 def rev(speed, timeout=0):
-    off()
     motorLA.duty_cycle = 0
     motorLB.duty_cycle = int(speed * MAP_CONST)
     motorRA.duty_cycle = 0
