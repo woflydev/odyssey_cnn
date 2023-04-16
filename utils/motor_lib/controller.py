@@ -11,7 +11,7 @@ ds.init() 			# initialize controller
 ds.light.setColorI(0,255,0) 	# set touchpad color to red
 ds.triggerL.setMode(TriggerModes.Rigid)
 ds.triggerR.setMode(TriggerModes.Pulse)
-ds.conType.BT = True 		# set connection type to bluetooth
+ds.conType.BT = False 		# set connection type to bluetooth
 
 lightToggle = 0
 
