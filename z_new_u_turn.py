@@ -148,7 +148,7 @@ class OpenCVDriver(object):
         diffVal = np.sum(diffArr[-4:]) / 100
         return diffVal, collapsedArr
     
-    def radiusToThrust(self, radius, speed, width=100):
+    def radiusToThrust(self, radius, speed, width=100, scale=1):
         if radius == np.inf:
             return [speed, speed]
         elif abs(radius) == width / 2:
@@ -156,7 +156,7 @@ class OpenCVDriver(object):
                 return [0, speed]
             return [speed, 0]
         else:
-            ratio = math.sqrt((radius - width / 2) / (radius + width / 2))
+            ratio = math.sqrt((radius/scale - width / 2) / (radius/scale + width / 2))
             return speed * np.array([ratio, 1/ratio])
 
     def steer(self, params, frame):
@@ -193,8 +193,8 @@ def begin_analysis(path=0):
     USE_MATRIX = False
 
     frameDelay = 0
-    frameScale = 0.25
-    skipFrame = 5
+    frameScale = 0.5
+    skipFrame = 1
     frameNum = 0
     
     # For testLaneVideo
