@@ -6,7 +6,7 @@ import datetime
 import sys
 import time
 import os
-from z_preprocess import preprocess
+from utils.camera_tools.preprocess import *
 #from test import move, off
 
 _SHOW_IMAGE = False
@@ -16,8 +16,6 @@ class OpenCV_Driver(object):
 		def __init__(self, car=None):
 				logging.info('Creating a OpenCV_Driver...')
 				self.car = car
-
-				#current 90 degree steering angle to eliminate start lag
 				self.curr_steering_angle = 90
 
 		def follow_lane(self, frame):
@@ -36,12 +34,15 @@ class OpenCV_Driver(object):
 						return frame
 
 				new_steering_angle = compute_steering_angle(frame, lane_lines)
-				self.curr_steering_angle = stabilize_steering_angle(self.curr_steering_angle, new_steering_angle, len(lane_lines))
+				#DANGER
+				#self.curr_steering_angle = stabilize_steering_angle(self.curr_steering_angle, new_steering_angle, len(lane_lines))
+				self.curr_steering_angle = new_steering_angle
 
 				if self.car is not None:
 						self.car.front_wheels.turn(self.curr_steering_angle)
 				curr_heading_image = display_heading_line(frame, self.curr_steering_angle)
-				show_image("heading", curr_heading_image)
+				# show_image("heading", curr_heading_image)
+				cv2.imwrite("heading.test.png", curr_heading_image)
 
 				return curr_heading_image
 
@@ -52,114 +53,52 @@ class OpenCV_Driver(object):
 def detect_lane(frame):
 		logging.debug('detecting lane lines...')
 
-		edges = detect_edges(frame)
-		show_image('edges', edges)
+		frame = preprocess(frame)
+		yellow = yellowOnly(frame)
+		yellow = cv2.cvtColor(yellow, cv2.COLOR_HSV2BGR)
+		yellow = cv2.cvtColor(yellow, cv2.COLOR_BGR2GRAY)
 
-		cropped_edges = region_of_interest(edges)
-		show_image('edges cropped', cropped_edges)
-		
-		#cropped_edges = region_of_interest(preprocess(frame))
-		
-		line_segments = detect_line_segments(cropped_edges)
+		blue = blueOnly(frame)
+		blue = cv2.cvtColor(blue, cv2.COLOR_HSV2BGR)
+		blue = cv2.cvtColor(blue, cv2.COLOR_BGR2GRAY)
+
+		yellow_segments = detect_line_segments(yellow)
+		print(yellow_segments is None)
+		if(yellow_segments is not None):
+			avg_yellow_line = np.average(np.array(yellow_segments), (0,1)).astype(np.int64)
+
+		blue_segments = detect_line_segments(blue)
+		if(blue_segments is not None):
+			avg_blue_line = np.average(np.array(blue_segments), (0,1)).astype(np.int64)
+
+		if(yellow_segments is None):
+			line_segments = [[avg_blue_line]]
+		elif(blue_segments is None):
+			line_segments = [[avg_yellow_line]]
+		else:
+			line_segments = [[avg_yellow_line], [avg_blue_line]]
 		line_segment_image = display_lines(frame, line_segments)
-		show_image("line segments", line_segment_image)
+		
+		#show_image("line segments", line_segment_image)
 
 		lane_lines = average_slope_intercept(frame, line_segments)
 		lane_lines_image = display_lines(frame, lane_lines)
-		show_image("lane lines", lane_lines_image)
+		#show_image("lane lines", lane_lines_image)
+		cv2.imwrite('opencv_drive.test.png', line_segment_image)
 
 		return lane_lines, lane_lines_image
-
-
-def detect_edges(frame):
-		# filter for blue lane lines
-		hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-		hsv2 = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-		show_image("bluehsv", hsv)
-		show_image("yellowhsv", hsv2)
-		
-		#lower_blue = np.array([30, 40, 0])
-		#upper_blue = np.array([150, 255, 255])
-		#mask = cv2.inRange(hsv, lower_blue, upper_blue)
-		
-		#lower_yellow = np.array([20, 100, 100])
-		#upper_yellow = np.array([30, 255, 255])
-		#mask2 = cv2.inRange(hsv2, lower_yellow, upper_yellow)
-
-		#this is currently configured for blue and yellow
-		lower_white = np.array([16, 0, 0], dtype=np.uint8)
-		upper_white = np.array([66, 255, 147], dtype=np.uint8)
-		merged_mask = cv2.inRange(hsv2, lower_white, upper_white)
-
-		#show_image("blue mask", mask)
-		#show_image("yellow mask", mask2)
-		
-		#merged_mask = cv2.bitwise_or(mask, mask2)
-		#merged_mask = cv2.bitwise_and(img,img, m=m)
-		
-		show_image("merged", merged_mask)
-
-		# detect edges
-		edges = cv2.Canny(merged_mask, 200, 400)
-
-		return edges
-
-"""
-def detect_edges_old(frame):
-		# filter for blue lane lines
-		hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-		show_image("hsv", hsv)
-		for i in range(16):
-				lower_blue = np.array([30, 16 * i, 0])
-				upper_blue = np.array([150, 255, 255])
-				mask = cv2.inRange(hsv, lower_blue, upper_blue)
-				show_image("blue mask Sat=%s" % (16* i), mask)
-
-
-		#for i in range(16):
-				#lower_blue = np.array([16 * i, 40, 50])
-				#upper_blue = np.array([150, 255, 255])
-				#mask = cv2.inRange(hsv, lower_blue, upper_blue)
-			 # show_image("blue mask hue=%s" % (16* i), mask)
-
-				# detect edges
-		edges = cv2.Canny(mask, 200, 400)
-
-		return edges
-
-"""
-
-# only focus bottom half of the screen
-def region_of_interest(canny):
-		height, width = canny.shape
-		mask = np.zeros_like(canny)
-
-		polygon = np.array([[
-				(0, height/ 2),
-				(width, height/ 2),
-				(width, height),
-				(0, height),
-		]], np.int32)
-
-		cv2.fillPoly(mask, polygon, 255)
-		show_image("cropped screen", mask)
-		masked_image = cv2.bitwise_and(canny, mask)
-		return masked_image
-
 
 def detect_line_segments(cropped_edges):
 		# tuning min_threshold, minLineLength, maxLineGap is a trial and error process by hand
 		rho = 1  # precision in pixel, i.e. 1 pixel
 		angle = np.pi / 180  # degree in radian, i.e. 1 degree
-		min_threshold = 10  # minimal of votes
-		line_segments = cv2.HoughLinesP(cropped_edges, rho, angle, min_threshold, np.array([]), minLineLength=8,
-																		maxLineGap=4)
+		min_threshold = 70  # minimal of votes
+		line_segments = cv2.HoughLinesP(cropped_edges, rho, angle, min_threshold, np.array([]), minLineLength=100, maxLineGap=30)
 
 		if line_segments is not None:
 				for line_segment in line_segments:
 						logging.debug('detected line_segment:')
 						logging.debug("%s of length %s" % (line_segment, length_of_line_segment(line_segment[0])))
-
 		return line_segments
 
 
@@ -256,8 +195,7 @@ def stabilize_steering_angle(curr_steering_angle, new_steering_angle, num_of_lan
 		
 		angle_deviation = new_steering_angle - curr_steering_angle
 		if abs(angle_deviation) > max_angle_deviation:
-				stabilized_steering_angle = int(curr_steering_angle
-																				+ max_angle_deviation * angle_deviation / abs(angle_deviation))
+				stabilized_steering_angle = int(curr_steering_angle + max_angle_deviation * angle_deviation / abs(angle_deviation))
 		else:
 				stabilized_steering_angle = new_steering_angle
 		logging.info('Proposed angle: %s, stabilized angle: %s' % (new_steering_angle, stabilized_steering_angle))
@@ -277,14 +215,15 @@ def stabilize_steering_angle(curr_steering_angle, new_steering_angle, num_of_lan
 ############################
 # Utility Functions
 ############################
-def display_lines(frame, lines, line_color=(0, 255, 0), line_width=10):
-		line_image = np.zeros_like(frame)
-		if lines is not None:
-				for line in lines:
-						for x1, y1, x2, y2 in line:
-								cv2.line(line_image, (x1, y1), (x2, y2), line_color, line_width)
-		line_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
-		return line_image
+def display_lines(frame, lines, line_color=(255, 0, 0), line_width=2):
+	line_image = np.zeros_like(frame)
+	if lines is not None:
+			for line in lines:
+					for x1, y1, x2, y2 in line:
+							print(x1,x2,y1,y2)
+							cv2.line(line_image, (x1, y1), (x2, y2), line_color, line_width)
+	line_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
+	return line_image
 
 
 def display_heading_line(frame, steering_angle, line_color=(0, 0, 255), line_width=5, ):
@@ -353,7 +292,6 @@ def test_photo(file):
 		land_follower = OpenCV_Driver()
 		frame = cv2.imread(file)
 		combo_image = land_follower.follow_lane(frame)
-		show_image('final', combo_image, True)
 		cv2.waitKey(0)
 		cv2.destroyAllWindows()
 
@@ -416,9 +354,9 @@ def test_video(video_file, video_name):
 
 if __name__ == '__main__':
 		logging.basicConfig(level=logging.INFO)
-
+		test_photo("data/img/school_tape3.jpg")
 		#test_video(sys.argv[1], sys.argv[2])
-		test_video("data\\TestTrack.mp4", sys.argv[1])
+		#test_video("data\\TestTrack.mp4", sys.argv[1])
 		#test_video(0)
 		#test_photo(sys.argv[1])
 		#test_video(sys.argv[1])
