@@ -1,3 +1,4 @@
+*.test.*
 # ignore training output folder, can generate with zdata
 data/training_data/
 data/avi/

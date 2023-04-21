@@ -6,7 +6,7 @@ import datetime
 import sys
 import time
 import os
-#from test import move, off
+from utils.motor_lib.driver import move, off
 
 _SHOW_IMAGE = False
 
@@ -71,22 +71,27 @@ def detect_lane(frame):
 def detect_edges(frame):
     # filter for blue lane lines
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    hsv2 = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     show_image("bluehsv", hsv)
-    show_image("yellowhsv", hsv2)
     
-    #lower_blue = np.array([30, 40, 0])
-    #upper_blue = np.array([150, 255, 255])
-    #mask = cv2.inRange(hsv, lower_blue, upper_blue)
+    lower_blue = np.array([88, 43, 189])
+    upper_blue = np.array([253, 255, 255])
+    mask = cv2.inRange(hsv, lower_blue, upper_blue)
     
-    #lower_yellow = np.array([20, 100, 100])
-    #upper_yellow = np.array([30, 255, 255])
-    #mask2 = cv2.inRange(hsv2, lower_yellow, upper_yellow)
+    lower_yellow = np.array([0, 0, 242])
+    upper_yellow = np.array([66, 49, 255])
+    mask2 = cv2.inRange(hsv, lower_yellow, upper_yellow)
 
     #this is currently configured for blue and yellow
-    lower_white = np.array([16, 0, 0], dtype=np.uint8)
-    upper_white = np.array([66, 255, 147], dtype=np.uint8)
-    merged_mask = cv2.inRange(hsv2, lower_white, upper_white)
+    #lower_white = np.array([16, 0, 0], dtype=np.uint8)
+    #upper_white = np.array([66, 255, 147], dtype=np.uint8)
+    #merged_mask = cv2.inRange(hsv, mask2, mask)
+    merged_mask = mask + mask2
+
+    res = cv2.bitwise_or(frame,frame, mask=merged_mask)
+
+    os.remove('final.png')
+
+    cv2.imwrite("final.png", merged_mask)
 
     #show_image("blue mask", mask)
     #show_image("yellow mask", mask2)
@@ -259,7 +264,7 @@ def stabilize_steering_angle(curr_steering_angle, new_steering_angle, num_of_lan
         stabilized_steering_angle = new_steering_angle
     logging.info('Proposed angle: %s, stabilized angle: %s' % (new_steering_angle, stabilized_steering_angle))
 
-    BASE_SPEED = 15
+    BASE_SPEED = 50
 
     #calculate motor speeds
     motor_left = round(throttle_angle_to_thrust(BASE_SPEED, stabilized_steering_angle - 90)[0])
@@ -267,6 +272,8 @@ def stabilize_steering_angle(curr_steering_angle, new_steering_angle, num_of_lan
     logging.info(f"Left Motor: {motor_left}, Right Motor: {motor_right}\n")
 
     #MOVE COMMAND HERE
+
+    move(-motor_left, -motor_right)
 
     return stabilized_steering_angle
 
@@ -389,7 +396,7 @@ def test_video(video_file, video_name):
             #cv2.imwrite("%s_overlay_%03d.png" % (video_file, i), combo_image)
             video_overlay.write(combo_image)
 
-            cv2.imshow("Road with Lane line", combo_image_resized)
+            #cv2.imshow("Road with Lane line", combo_image_resized)
 
             try:
                 # if passed in time per frame, then execute
@@ -412,8 +419,8 @@ def test_video(video_file, video_name):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    test_video(sys.argv[1], sys.argv[2])
+    #test_video(sys.argv[1], sys.argv[2])
     #test_video("data\\test_lane_video.mp4")
-    #test_video(0)
+    test_video(0, "data\\school_test.mp4")
     #test_photo(sys.argv[1])
     #test_video(sys.argv[1])
