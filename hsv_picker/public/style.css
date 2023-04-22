@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk&display=swap');
+body {
+    font-family: 'Schibsted Grotesk', sans-serif;
+    margin: 30px;
+}
+#hsv {
+    display: none;
+}
+.sliders {
+    display: inline-block;
+    width: 50%;
+    padding-right: 30px;
+}
+.slider-group {
+    padding: 30px 0px 30px 0px;
+}
+.slider {
+  appearance: none;
+  width: 100%; /* Full-width */
+  height: 25px; /* Specified height */
+  background: #d3d3d3; /* Grey background */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  transition: opacity .2s;
+  border-radius: 100px;
+}
+#mask {
+    width: 45%;
+    display: inline-block;
+    vertical-align: top;
+    padding-top: 30px;
+}

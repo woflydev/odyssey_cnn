@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link type="text/css" rel="stylesheet" href="style.css" />
+        <script type="text/javascript" src="sliders.js"></script>
+        <title>HSV picker</title>
+    </head>
+    <body>
+        <h1>HSV Picker:</h1>
+        <div class="sliders">
+            <div class="slider-group">
+                <div class="slider-container">
+                    <input type="range" min="0" max="360" value="0" class="slider" id="h0">
+                    <span id="hMin"></span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="100" value="0" class="slider" id="s0">
+                    <span id="sMin"></span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="100" value="0" class="slider" id="v0">
+                    <span id="vMin"></span>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-container">
+                    <input type="range" min="0" max="360" value="360" class="slider" id="h1">
+                    <span id="hMax"></span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="100" value="100" class="slider" id="s1">
+                    <span id="sMax"></span>
+                </div>
+                <div class="slider-container">
+                    <input type="range" min="0" max="100" value="100" class="slider" id="v1">
+                    <span id="vMax"></span>
+                </div>
+            </div>
+        </div>
+
+
+        <canvas id="hsv"></canvas>
+        <canvas id="mask"></canvas>
+    </body>
+</html>
