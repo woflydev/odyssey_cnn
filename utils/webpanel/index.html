@@ -1,0 +1,17 @@
+<style>
+    html, body{
+        margin:0;
+        padding:0;
+    }
+    img{
+        width: 100%;
+    }
+</style>
+<img src="/frame" />
+<script>
+    let socket = new WebSocket("ws://" + location.host + "/");
+    let img = document.querySelector("img");
+    socket.onmessage = () => {
+        img.src = `/frame?refresh=${Date.now()}`
+    }
+</script>
