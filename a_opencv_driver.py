@@ -16,7 +16,7 @@ os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;udp"
 SHOW_IMAGE = "browser"
 
 # dilation thingo for better edge detection
-dilatation_size = 2
+dilatation_size = 4
 dilation_shape = cv2.MORPH_RECT
 dilation_element = cv2.getStructuringElement(dilation_shape, (2 * dilatation_size + 1, 2 * dilatation_size + 1), (dilatation_size, dilatation_size))
 
@@ -38,9 +38,8 @@ class OpenCV_Driver(object):
         return final_frame
 
     def steer(self, frame, lane_lines):
-        logging.debug('Steering Calculations Running...')
-        if len(lane_lines) == 0:
-            logging.error('No lane lines detected, nothing to do.')
+        if len(lane_lines) == False:
+            logging.error('No visible lane lines, do nothing')
             return frame
 
         new_steering_angle = compute_steering_angle(frame, lane_lines)
@@ -65,14 +64,19 @@ def detect_lane(frame):
     #frame = cv2.blur(frame, (11,11))
     rgb = frame#cv2.cvtColor(frame, cv2.COLOR_HSV2BGR)
     frame = frame[:,:,0] # only preserve hue
-    frame[frame > 0] = 255
-    frame = cv2.Canny(frame,70,150)
+    frame[frame == 0] = 255 # THIS COLOR CANNOT BE CLOSE TO BLUE NOR YELLOW
+    frame = cv2.dilate(frame, dilation_element)
+    frame = cv2.Canny(frame, 50, 60)
     frame = cv2.dilate(frame, dilation_element)
     #blue = cv2.Canny(blue,100,200)
 
     segments = detect_line_segments(frame)[:,0,:]
+
+    if segments is None:
+        return False, rgb
     
-    image = display_lines(cv2.bitwise_and(rgb, rgb, mask=frame), segments, (0,255,0), 1)
+    cannied_rgb = cv2.bitwise_and(rgb, rgb, mask=frame)
+    image = display_lines(rgb, segments, (0,255,0), 1)
     lane_lines = average_slope_intercept(frame, segments)
     height = frame.shape[0]
     _lines = [[int(l[0]), height, int(l[0] - height * l[1]),0] for l in lane_lines]
@@ -149,8 +153,9 @@ def compute_steering_angle(frame, lane_lines):
     else:
         x1, invSlope1 = lane_lines[0]
         x2, invSlope2 = lane_lines[1]
+        avg_top_intercept = (x1 - height * invSlope1 + x2 - height * invSlope2) / 2
 
-        return 90 - math.atan((invSlope1 + invSlope2) / 2) / np.pi * 180
+        return 90 - math.atan((avg_top_intercept - width/2) / (0 - height)) / np.pi * 180
 ############################
 # Utility Functions
 ############################
@@ -248,7 +253,6 @@ def test_video(video_file):
         #cv2.imshow("Preprocessor", preprocess(frame))
 
         combo_image = lane_follower.follow_lane(frame)
-        combo_image_resized = cv2.resize(combo_image, (960, 540))
         
         #cv2.imwrite("%s_%03d_%03d.png" % (video_file, i, lane_follower.curr_steering_angle), frame)
         #cv2.imwrite("%s_overlay_%03d.png" % (video_file, i), combo_image)

@@ -27,7 +27,7 @@ def blueOnly(hsv):
     return cv2.bitwise_and(hsv,hsv, mask=mask4)
 
 def laneColorsOnly(hsv):
-    mask = cv2.inRange(hsv, (0, 0, 0), (64,256,256))
+    mask = cv2.inRange(hsv, (20, 0, 0), (65,256,256))
     mask4 = cv2.inRange(hsv, (80, 0, 0), (160,256,256))
     return cv2.bitwise_and(hsv,hsv, mask=cv2.bitwise_or(mask,mask4))
 
