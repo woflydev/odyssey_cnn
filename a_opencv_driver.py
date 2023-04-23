@@ -14,11 +14,14 @@ os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;udp"
 
 # Possible values: "browser", "opencv" and "none"
 SHOW_IMAGE = "browser"
-
+MAX_INVSLOPE = 6
 # dilation thingo for better edge detection
-dilatation_size = 4
+dilatation_size = 2
 dilation_shape = cv2.MORPH_RECT
 dilation_element = cv2.getStructuringElement(dilation_shape, (2 * dilatation_size + 1, 2 * dilatation_size + 1), (dilatation_size, dilatation_size))
+
+dilatation_size_2 = 4
+dilation_element_2 = cv2.getStructuringElement(dilation_shape, (2 * dilatation_size_2 + 1, 2 * dilatation_size_2 + 1), (dilatation_size_2, dilatation_size_2))
 
 
 class OpenCV_Driver(object):
@@ -60,24 +63,25 @@ class OpenCV_Driver(object):
 ############################
 def detect_lane(frame):
     logging.debug('detecting lane lines...')
-    frame = laneColorsOnly(preprocess(frame))
-    #frame = cv2.blur(frame, (11,11))
-    rgb = frame#cv2.cvtColor(frame, cv2.COLOR_HSV2BGR)
-    frame = frame[:,:,0] # only preserve hue
+    rgb = frame[round(frame.shape[0] / 3):, :]
+    frame = preprocess(frame, True)
+    frame = cv2.blur(frame, (11,11))
+    frame = frame[:,:,1] # only preserve hue
     frame[frame == 0] = 255 # THIS COLOR CANNOT BE CLOSE TO BLUE NOR YELLOW
     frame = cv2.dilate(frame, dilation_element)
     frame = cv2.Canny(frame, 50, 60)
-    frame = cv2.dilate(frame, dilation_element)
-    #blue = cv2.Canny(blue,100,200)
+    frame = cv2.dilate(frame, dilation_element_2)
 
-    segments = detect_line_segments(frame)[:,0,:]
+    segments = detect_line_segments(frame)
 
     if segments is None:
-        return False, rgb
-    
+        return [], rgb
+    segments = segments[:,0,:]
     cannied_rgb = cv2.bitwise_and(rgb, rgb, mask=frame)
     image = display_lines(rgb, segments, (0,255,0), 1)
     lane_lines = average_slope_intercept(frame, segments)
+    if lane_lines is None:
+        return [], rgb
     height = frame.shape[0]
     _lines = [[int(l[0]), height, int(l[0] - height * l[1]),0] for l in lane_lines]
     image = display_lines(image, _lines, (255,255,255), 10)
@@ -89,9 +93,9 @@ def detect_line_segments(image):
         image,
         3, # prevision in pixel
         np.pi / 180 * 2, #precision in rad
-        10, # min number of votes
+        200, # min number of votes
         np.array([]),
-        minLineLength=int(image.shape[0] / 3),
+        minLineLength=int(image.shape[0] / 5),
         maxLineGap=30)
 
 
@@ -108,14 +112,14 @@ def average_slope_intercept(frame, segments):
         if(y2 == y1):
             continue
         invSlope = (x2-x1) / (y2-y1)
-        if(abs(invSlope) > 1.5):
+        if(abs(invSlope) > MAX_INVSLOPE):
             #too horizontal, discard this line
             continue
         intercept = x1 + invSlope * (frame.shape[0]-y1)
-        if(intercept > frame.shape[1]):
-            continue
-        if(intercept < 0):
-            continue
+        #if(intercept > frame.shape[1]):
+        #    continue
+        #if(intercept < 0):
+        #    continue
         if(intercept < middle):
             left_segments.append([intercept, invSlope])
             left_segment_weights.append((x1-x2) ** 2 + (y2-y1) ** 2)
@@ -132,6 +136,8 @@ def average_slope_intercept(frame, segments):
         right = []
     
     if(len(left) == 0):
+        if(len(right) == 0):
+            return []
         return [right]
     if(len(right) == 0):
         return [left]
@@ -236,9 +242,9 @@ def test_video(video_file):
     #    cap = cv2.VideoCapture(video_file, cv2.CAP_DSHOW)
     #except:
 
-    # skip first second of video.
-    #for i in range(510):
-    #    _, frame = cap.read()
+    #skip first second of video.
+    for i in range(30):
+        _, frame = cap.read()
 
     #video_type = cv2.VideoWriter_fourcc(*'MJPG')
     #video_overlay = cv2.VideoWriter("data\\avi\\%s_overlay.avi" % (video_name), video_type, 10.0, size)
@@ -246,7 +252,8 @@ def test_video(video_file):
     lastTime = time.time()
     while cap.isOpened():
         _, frame = cap.read()
-        
+        if(_ == False):
+            print("cannot read video")
         delay = time.time() - lastTime
         print(f'frame {i}: {int(10 / delay)/10} fps')
         lastTime = time.time()
@@ -265,9 +272,9 @@ def test_video(video_file):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    #test_photo("data/img/school_tape3.jpg")
+    #test_photo("data/img/stolen2.png")
     #test_video(sys.argv[1], sys.argv[2])
-    test_video("data/TestTrack.mp4")
+    test_video("data/line_model_test.mp4")
     #test_video(0)
     #test_photo(sys.argv[1])
     #test_video(sys.argv[1])
