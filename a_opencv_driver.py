@@ -37,7 +37,7 @@ class OpenCV_Driver(object):
 
         lane_lines, frame = detect_lane(frame)
         final_frame = self.steer(frame, lane_lines)
-        show_image(final_frame)
+        show_image("final_frame", final_frame)
         return final_frame
 
     def steer(self, frame, lane_lines):
@@ -65,6 +65,7 @@ def detect_lane(frame):
     logging.debug('detecting lane lines...')
     rgb = frame[round(frame.shape[0] / 3):, :]
     frame = preprocess(frame, True)
+    show_image("post_preprocess", frame)
     frame = cv2.blur(frame, (11,11))
     frame = frame[:,:,1] # only preserve hue
     frame[frame == 0] = 255 # THIS COLOR CANNOT BE CLOSE TO BLUE NOR YELLOW
@@ -79,23 +80,27 @@ def detect_lane(frame):
     segments = segments[:,0,:]
     cannied_rgb = cv2.bitwise_and(rgb, rgb, mask=frame)
     image = display_lines(rgb, segments, (0,255,0), 1)
+    cannied_image = display_lines(cannied_rgb, segments, (0,255,0), 1)
     lane_lines = average_slope_intercept(frame, segments)
     if lane_lines is None:
         return [], rgb
     height = frame.shape[0]
     _lines = [[int(l[0]), height, int(l[0] - height * l[1]),0] for l in lane_lines]
     image = display_lines(image, _lines, (255,255,255), 10)
+    cannied_image = display_lines(cannied_image, _lines, (255,255,255), 10)
+    show_image("lane_lines", image)
+    show_image("cannied_lane_lines", cannied_image)
 
     return lane_lines, image
 
 def detect_line_segments(image):
     return cv2.HoughLinesP(
         image,
-        3, # prevision in pixel
-        np.pi / 180 * 2, #precision in rad
-        200, # min number of votes
+        6, # prevision in pixel
+        np.pi / 180 * 4, #precision in rad
+        240, # min number of votes
         np.array([]),
-        minLineLength=int(image.shape[0] / 5),
+        minLineLength=int(image.shape[0] / 4),
         maxLineGap=30)
 
 
@@ -204,11 +209,11 @@ def display_heading_line(frame, steering_angle, line_color=(0, 0, 255), line_wid
 
 
 # debug switch to not clog the screen with windows
-def show_image(frame, show=SHOW_IMAGE):
+def show_image(name, frame, show=SHOW_IMAGE):
     if(show == "opencv"):
-        cv2.imshow("show image", frame)
+        cv2.imshow(name, frame)
     elif(show == "browser"):
-        tel.show_image(frame)
+        tel.show_image(name, frame)
 
 def throttle_angle_to_thrust(r, theta):
     try:
@@ -274,7 +279,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     #test_photo("data/img/stolen2.png")
     #test_video(sys.argv[1], sys.argv[2])
-    test_video("data/line_model_test.mp4")
+    test_video("data/TestTrack.mp4")
     #test_video(0)
     #test_photo(sys.argv[1])
     #test_video(sys.argv[1])

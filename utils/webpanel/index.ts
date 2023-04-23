@@ -1,6 +1,11 @@
 import { serve } from "https://deno.land/std@0.184.0/http/server.ts";
+const path = "/dev/shm/odyssey_tmp";
 let activeSockets:WebSocket[] = [];
-
+try{
+    await Deno.stat(path)
+}catch(_e){
+    await Deno.mkdir(path)
+}
 function removeSocket(socket:WebSocket){
     activeSockets = activeSockets.filter(s => s !== socket);
     //@ts-ignore: GC?
@@ -28,9 +33,19 @@ const handler = async (request: Request): Promise<Response> => {
         activeSockets.push(socket)
         return response;
     }
-
-    if(pathname === "/frame"){
-        return new Response(await Deno.readFile('/dev/shm/frame.png'), {
+    if(pathname === "/frames"){
+        const frames: string[] = [];
+        for await(const {name, isFile} of Deno.readDir(path)){
+            if(isFile && name.endsWith(".png")) frames.push(name.replace(".png", ""))
+        }
+        return new Response(JSON.stringify(frames), {
+            headers:{
+                "Content-Type": "application/json"
+            }
+        })
+    }
+    if(pathname.startsWith("/frame/")){
+        return new Response(await Deno.readFile(`/dev/shm/odyssey_tmp/${pathname.replace("/frame/","")}.png`), {
             headers:{
                 'Content-Type': 'image/png'
             }
@@ -44,7 +59,7 @@ const handler = async (request: Request): Promise<Response> => {
         })
     }
     if(pathname === "/telementry"){
-        return new Response(await Deno.readFile('/dev/shm/telementry.txt'), {
+        return new Response(await Deno.readFile('/dev/shm/odyssey_tmp/telementry.txt'), {
             headers:{
                 'Content-Type': 'text/plain'
             }
@@ -61,12 +76,13 @@ const handler = async (request: Request): Promise<Response> => {
 
 serve(handler);
 
-const watcher = Deno.watchFs("/dev/shm/frame.png");
+const watcher = Deno.watchFs(path);
 
 (async function () {
     for await (const _ of watcher){
+        const change = _.paths[0].replace(path,"").replace(".png", "").slice(1);
         for(const s of activeSockets){
-            s.send("frame")
+            s.send(change)
         } 
     } 
 })()
