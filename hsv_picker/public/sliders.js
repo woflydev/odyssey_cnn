@@ -79,44 +79,46 @@ function start() {
     }
     
     
-    const DEFAULT_PATH = './toMask.jpg';
+    const DEFAULT_PATH = './birds.jpg';
     const img = new Image();
     let canvas = document.getElementById("hsv");
     let dest = document.getElementById("mask");
     let maskBounds = [new HSV(0, 0, 0), new HSV(360, 100, 100)]
     
-    let websocket = new WebSocket('ws://localhost:8000/');
-    websocket.binaryType = 'blob';
+    /*let websocket = new WebSocket('ws://localhost:8000/');
+    websocket.binaryType = 'blob';*/
 
-    //img.crossOrigin = "anonymous";
+    img.crossOrigin = "anonymous";
     img.src = DEFAULT_PATH;
+    img.style = 'display: none;';
+    document.getElementById('body').appendChild(img);
+
     let imageData;
     let ctx = canvas.getContext('2d', {"willReadFrequently": true});
     let maskCtx = dest.getContext('2d', {"willReadFrequently": true});
 
     img.onload = function () {
+        console.log("Loaded!");
         canvas.width = this.width;
         canvas.height = this.height;
         dest.width = this.width;
         dest.height = this.height;
 
-        websocket.addEventListener('message', ({data}) => {
+        const sliderContainers = document.querySelectorAll(".slider-container");
+        for (let container of sliderContainers) {
+            let [slider, label] = container.children;
+            label.innerHTML = `${label.id}: ${slider.value}`;
+            const newUpdate = () => {update(ctx, maskCtx, label, slider)};
+            newUpdate();
+            slider.oninput = newUpdate;
+        };
+
+        /*websocket.addEventListener('message', ({data}) => {
             let blobURL = URL.createObjectURL(data);
             img.src = blobURL;
             update(ctx, maskCtx, null, null);
-        })
+        });*/
     }
-
-    const sliderContainers = document.querySelectorAll(".slider-container");
-    for (let container of sliderContainers) {
-        let [slider, label] = container.children;
-        label.innerHTML = `${label.id}: ${slider.value}`;
-        const newUpdate = () => {update(ctx, maskCtx, label, slider)};
-        newUpdate();
-        slider.oninput = newUpdate;
-    };
-    
-    
 }
 
-window.addEventListener('load', start, false);
+document.addEventListener('DOMContentLoaded', start, false);

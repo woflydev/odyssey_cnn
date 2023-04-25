@@ -1,0 +1,33 @@
+<style>
+    html, body{
+        margin:0;
+        padding:0;
+    }
+    img{
+        width: 100%;
+    }
+</style>
+<select></select>
+<img src="/frame" />
+<script type="module">
+    let socket = new WebSocket("ws://" + location.host + "/");
+    let img = document.querySelector("img");
+    let select = document.querySelector("select");
+
+    let res = await fetch("/frames")
+    let frames = JSON.parse(await res.text())
+    select.innerHTML = frames.map(frame => `<option value="${frame}">${frame}</option>`).join("\n")
+
+    let selectedFrame = frames[0] + "";
+    reloadImage();
+    select.addEventListener("change", function(){
+        selectedFrame = this.value;
+        reloadImage()
+    })
+    function reloadImage(){
+        img.src = `/frame/${selectedFrame}?refresh=${Date.now()}`
+    }
+    socket.onmessage = e => {
+        if(selectedFrame === e.data) reloadImage()
+    }
+</script>
