@@ -6,6 +6,7 @@ import sys
 import time
 import os
 import json
+from utils.camera_tools.preprocess import preprocess
 
 def sign(x):
     if x > 0:
@@ -24,22 +25,6 @@ class OpenCVDriver(object):
         #current 90 degree steering angle to eliminate start lag
         self.curr_steering_angle = 90
 
-
-    # Bounds crop the destination image (a series of points defining a polygon)
-    def perspective(self, frame, mtx, bounds, corners, scale, useCorners=True):
-        warpedFrame = cv2.warpPerspective(frame, mtx, bounds)
-
-        #blankMask = blankMask.astype('uint8')
-        # Makes sure the corner coordinates are in ascending order
-        newCorners = np.sort(corners, 0)
-
-        # Slices the frame to fit a rectangular region
-        if useCorners:
-            return warpedFrame[newCorners[0][1]:newCorners[1][1], newCorners[0][0]:newCorners[1][0]]
-        else:
-            return warpedFrame
-        #return warpedFrame
-
     def applyMasks(self, frame, masks):
         # Allows for multiple masks as an array to be applied then bitwise or.
 
@@ -54,32 +39,19 @@ class OpenCVDriver(object):
 
         return mergedMask
 
-    """def findEdges(self, frame):
-        # Parameters are tuned manually
-        preprocessedFrame = cv2.Canny(frame, 100, 900)
-        grayFrame = cv2.cvtColor(preprocessedFrame, cv2.COLOR_GRAY2BGR)
-        lines = cv2.HoughLines(preprocessedFrame, 1, np.pi / 180, 100, None, 0, 0)
+    # Bounds crop the destination image (a series of points defining a polygon)
+    def perspective(self, frame, mtx, bounds, corners, scale, useCorners=True):
+        warpedFrame = cv2.warpPerspective(frame, mtx, bounds)
 
-        coords = []
-        if lines is not None:
-            for i in range(0, len(lines)):
-                # Polar parameters
-                rho = lines[i][0][0]
-                theta = lines[i][0][1]
-                # Converts into rectilinear 
-                a = math.cos(theta)
-                b = math.sin(theta)
-                x0 = a * rho
-                y0 = b * rho
+        #blankMask = blankMask.astype('uint8')
+        # Makes sure the corner coordinates are in ascending order
+        newCorners = np.sort(corners, 0)
 
-                pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
-                pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
-
-                coords.append([pt1, pt2])
-                # Makes detected lines visible
-                cv2.line(grayFrame, pt1, pt2, (0,0,255), 2, cv2.LINE_AA)
-        return coords, grayFrame"""
-
+        # Slices the frame to fit a rectangular region
+        if useCorners:
+            return warpedFrame[newCorners[0][1]:newCorners[1][1], newCorners[0][0]:newCorners[1][0]]
+        else:
+            return warpedFrame
     def distortFrame(self, frame, radius, isMask=True, log=False):
         if radius == np.inf or radius == -np.inf:
             return frame
@@ -170,6 +142,9 @@ def printCoordinates(event, x, y, flags, params):
     if event == cv2.EVENT_LBUTTONDOWN:
         print(x, y)
 
+def movingAvg(arr):
+    harmSum = sum([1/x for x in arr])
+    return len(arr) / harmSum if harmSum != 0 else np.inf
 
 
 def begin_analysis(path=0):
@@ -190,40 +165,40 @@ def begin_analysis(path=0):
 
     # For white
     masks = np.array([[[0, 0, 221], [179, 255, 255]]])
-    USE_MATRIX = False
 
     frameDelay = 0
     frameScale = 0.5
     skipFrame = 1
     frameNum = 0
+
+    maxCurve = 200
+    curveRes = 2
     
     # For testLaneVideo
     srcPoints = np.array([[254, 207], [439, 212], [576, 313], [61, 308]]).astype(np.float32)
     destPoints = np.array([[249, 11], [433, 12], [439, 344], [254, 342]]).astype(np.float32)
-    corners = np.array([[255, 4], [449, 345]]).astype('uint32')
+    corners = np.array([[235, 3], [437, 381]]).astype('uint32')
     
     # For testTrack
     '''srcPoints = np.array([[670, 181], [1106, 179], [1179, 534], [595, 522]]).astype(np.float32)
     destPoints = np.array([[477, 87], [842, 70], [871, 578], [462, 571]]).astype(np.float32)
     corners = np.array([[450, 100], [900, 600]]).astype('uint32')'''
-    
+
+    # For testTrack
+    """srcPoints = np.array([[348, 72], [663, 73], [282, 519], [809, 529]], dtype=np.float32) * frameScale
+    destPoints = np.array([[352, 64], [592, 62], [352, 518], [605, 523]], dtype=np.float32) * frameScale
+    corners = np.array([[155, 6], [418, 377]], dtype=np.uint32)"""
 
     createWindows(['original', 'birds-eye', 'masked', 'corrected', 'birdsEyeLanes'])
 
     # Allows easier cropping
-    #cv2.setMouseCallback('birds-eye', printCoordinates)
+    cv2.setMouseCallback('birds-eye', printCoordinates)
 
-
-    if USE_MATRIX:
-        bounds = np.array([1920, 1080])
-        mtx = json.loads(open('matrix.json', 'r').read())[0]
-        rvsMtx = json.loads(open('matrix.json', 'r').read())[1]
-    else: 
-        #bounds = (np.amax(destPoints, 0) - np.amin(destPoints, 0)).astype(np.int32)
-        bounds = size
-        #bounds = destPoints
-        mtx = cv2.getPerspectiveTransform(srcPoints, destPoints)
-        rvsMtx = cv2.getPerspectiveTransform(destPoints, srcPoints)
+    #bounds = (np.amax(destPoints, 0) - np.amin(destPoints, 0)).astype(np.int32)
+    bounds = size
+    #bounds = destPoints
+    mtx = cv2.getPerspectiveTransform(srcPoints, destPoints)
+    rvsMtx = cv2.getPerspectiveTransform(destPoints, srcPoints)
 
     while True:
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -232,9 +207,9 @@ def begin_analysis(path=0):
         if ret and frameNum % skipFrame == 0:
             frame = cv2.resize(frame, (0, 0), fx=frameScale, fy=frameScale)
             cv2.imshow('original', frame)
-            birdsEyeFrame = np.copy(frame)
-            #birdsEyeFrame = driver.perspective(frame, mtx, bounds, corners, frameScale)
-            #cv2.imshow('birds-eye', birdsEyeFrame)
+            #birdsEyeFrame = np.copy(frame)
+            birdsEyeFrame = driver.perspective(frame, mtx, bounds, corners, frameScale, True)
+            cv2.imshow('birds-eye', birdsEyeFrame)
 
             warpedBounds = birdsEyeFrame.shape
 
@@ -242,47 +217,101 @@ def begin_analysis(path=0):
             #print(f"Warped frame: {warpedFrame}")
             #cv2.imshow('warp-test', warpedFrame)
 
-            maskedFrame = driver.applyMasks(birdsEyeFrame, masks)
+            mask = driver.applyMasks(birdsEyeFrame, masks)
+            cv2.imshow('masked', mask)
             #maskedFrame = driver.distortFrame(maskedFrame, 500)
-            cv2.imshow('masked', maskedFrame)
+            """preprocessed_frame, mask = preprocess(frame)
+            cv2.imshow('masked', cv2.bitwise_and(preprocessed_frame, preprocessed_frame, mask=mask))"""
 
+            # Tries distortions from -100 pixels to 100 pixels with a resolution of 5 pixels on each side
+            #print(mask.shape)
+            if mask.shape[1] % 2 == 0:
+                splitMasks = np.split(mask, 2, axis=1)  
+            else:
+                splitMasks = np.split(mask[:,:-1], 2, axis=1)
 
-            # Tries distortions from -100 pixels to 100 pixels with a resolution of 5 pixels.
-            curveInfo = driver.curvature(maskedFrame, 100, 5)
+            curveInfo = [driver.curvature(splitMasks[0], maxCurve, curveRes), driver.curvature(splitMasks[1], maxCurve, curveRes)]
             #print(curveInfo['radius'])
-            if curveInfo['radius'] != np.inf:
-                radius = int(curveInfo["radius"])
+            avgRadius = movingAvg([curveInfo[0]["radius"], curveInfo[1]["radius"]])
+            if avgRadius != np.inf:
+                radius = int(avgRadius)
             else:
                 radius = np.inf
             
-            correctedFrame = driver.distortFrame(birdsEyeFrame, -radius)
-            cv2.imshow('corrected', correctedFrame)
+            #correctedFrame = driver.distortFrame(birdsEyeFrame, -radius)
+            #cv2.imshow('corrected', correctedFrame)
 
             birdsEyeLanes = np.copy(birdsEyeFrame)
+            laneLocations = np.array([0, 0])
+            for i in range(2):
+                if curveInfo[i]["intensityArr"] != []:
+                    laneLocations[i] = np.argsort(curveInfo[i]["intensityArr"])[-1] 
+                    - max(curveInfo[i]["offset"], 0) 
+                    + i * round(warpedBounds[1] / 2)
 
-            # Two brightest points (assumed that they are lanes)
-            # Splits the intensity into two sides
-            try:
-                sides = np.split(curveInfo['intensityArr'], 2)
-            except:
-                sides = np.split(curveInfo['intensityArr'][:-1], 2)
-            laneLocations = np.array([np.argsort(sides[0])[-1], np.argsort(sides[1])[-1] + sides[0].shape[0]]) - max(curveInfo['offset'], 0)
-
-            if curveInfo["radius"] == np.inf:
-                for lane in laneLocations:
-                    cv2.line(birdsEyeLanes, (lane, 0), (lane, warpedBounds[0]), lineColour, lineThickness)
-            else:
-                for lane in laneLocations:
-                    birdsEyeLanes = cv2.circle(birdsEyeLanes, (int(lane + radius), warpedBounds[0]), abs(radius), lineColour, lineThickness)    
+            for i in range(2):
+                if curveInfo[i]["radius"] == np.inf:
+                    cv2.line(birdsEyeLanes, (laneLocations[i], 0), 
+                             (laneLocations[i], warpedBounds[0]), 
+                             lineColour, lineThickness)
+                else:
+                    birdsEyeLanes = cv2.circle(birdsEyeLanes, 
+                                               (int(laneLocations[i] + curveInfo[i]["radius"]), 
+                                                warpedBounds[0]), abs(int(curveInfo[i]["radius"])), 
+                                                lineColour, lineThickness)
+                    
 
             cv2.imshow('birdsEyeLanes', birdsEyeLanes)
 
 
-            #print(f"Radius of curvature: {radius}")
+            print(f"Curvature (reciprocal of radius): {1/radius}")
             #print(f"Lane locations: {laneLocations}")
-            print(f"Motor speeds: {driver.radiusToThrust(curveInfo['radius'], 50)}")
+            #print(f"Motor speeds: {driver.radiusToThrust(radius, 50)}")
         time.sleep(frameDelay)
         frameNum += 1
 
 if __name__ == "__main__":
-    begin_analysis('.\data\\birds_eye_lane_data.mp4')
+    begin_analysis('.\data\\test_lane_video.mp4')
+
+
+
+        #return warpedFrame
+"""def applyMasks(self, frame, masks):
+        # Allows for multiple masks as an array to be applied then bitwise or.
+
+        hsvArr = []
+        for mask in masks:
+            hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
+            hsvArr.append(cv2.inRange(hsv, mask[0], mask[1]))
+        
+        mergedMask = np.zeros(frame.shape[:2]).astype('uint8')
+        for maskedFrame in hsvArr:
+            mergedMask = cv2.bitwise_or(mergedMask, maskedFrame)
+
+        return mergedMask
+        
+        def findEdges(self, frame):
+        # Parameters are tuned manually
+        preprocessedFrame = cv2.Canny(frame, 100, 900)
+        grayFrame = cv2.cvtColor(preprocessedFrame, cv2.COLOR_GRAY2BGR)
+        lines = cv2.HoughLines(preprocessedFrame, 1, np.pi / 180, 100, None, 0, 0)
+
+        coords = []
+        if lines is not None:
+            for i in range(0, len(lines)):
+                # Polar parameters
+                rho = lines[i][0][0]
+                theta = lines[i][0][1]
+                # Converts into rectilinear 
+                a = math.cos(theta)
+                b = math.sin(theta)
+                x0 = a * rho
+                y0 = b * rho
+
+                pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
+                pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
+
+                coords.append([pt1, pt2])
+                # Makes detected lines visible
+                cv2.line(grayFrame, pt1, pt2, (0,0,255), 2, cv2.LINE_AA)
+        return coords, grayFrame"""

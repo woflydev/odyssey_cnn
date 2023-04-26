@@ -13,7 +13,7 @@ import os
 os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;udp"
 
 # Possible values: "browser", "opencv" and "none"
-SHOW_IMAGE = "browser"
+SHOW_IMAGE = "opencv"
 
 class OpenCV_Driver(object):
 
@@ -55,32 +55,13 @@ class OpenCV_Driver(object):
 ############################
 def detect_lane(frame):
     logging.debug('detecting lane lines...')
-    frame = preprocess(frame)
+    frame, _mask = preprocess(frame, True)
     rgb = cv2.cvtColor(frame, cv2.COLOR_HSV2BGR)
-    yellow = yellowOnly(frame)[:,:,0]
-    blue = blueOnly(frame)[:,:,0]
     #yellow = cv2.Canny(yellow,100,200)
     #blue = cv2.Canny(blue,100,200)
 
-    yellow_segments = detect_line_segments(yellow)
-    blue_segments = detect_line_segments(blue)
+    line_segments = detect_line_segments(_mask)[0,:]
     
-    if(yellow_segments is None):
-        yellow_segments = []
-    else:
-        yellow_segments = yellow_segments[:,0,:]
-
-    if(blue_segments is None):
-        blue_segments = []
-    else:
-        blue_segments = blue_segments[:,0,:]
-
-    if(len(yellow_segments) == 0):
-        line_segments = blue_segments
-    elif(len(blue_segments) == 0):
-        line_segments = yellow_segments
-    else:
-        line_segments = np.vstack((yellow_segments, blue_segments))
     #line_segment_image = display_lines(rgb, line_segments)
     #show_image("line segments", line_segment_image)
 

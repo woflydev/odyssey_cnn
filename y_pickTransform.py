@@ -32,7 +32,7 @@ destColour = (0, 255, 0)
 mode = 0
 modes = [ord('1'), ord('2'), ord('3'), ord('4')]
 
-imageScale = 1
+imageScale = 0.5
 
 circleRadius = 10
 circleThickness = 1
@@ -47,7 +47,7 @@ onStart = True
 
 image = cv2.imread(path)"""
 
-path = '.\data\\laneData.mp4'
+path = '.\data\\testTrack.mp4'
 cap = cv2.VideoCapture(path)
 
 cv2.namedWindow('source')
