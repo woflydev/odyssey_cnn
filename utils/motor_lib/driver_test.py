@@ -4,12 +4,18 @@ from driver import *
 # Path: driver\driver_test.py
 # testMove() a loop increasing the drive from (0,0) to (10,10) to (0,0) over 4 seconds
 def testMove():
+    drivePin(15, 50)
     print("Testing Move")
+    pm = 1
     for i in range(0, 100, 1):
-        move(i, i)
+        pm = -pm
+        move(pm * i, pm * i)
+        print(i)
         sleep(0.2)
     for i in range(100, 0, -1):
-        move(i, i)
+        pm = -pm
+        move(pm * i, pm * i)
+        print(i)
         sleep(0.2)
     off()
     print("Testing Move Complete")

@@ -25,10 +25,10 @@ pca.channels[1].duty_cycle = 0
 pca.channels[2].duty_cycle = 0
 pca.channels[3].duty_cycle = 0
 
-motorLA = pca.channels[2]
-motorLB = pca.channels[3]
-motorRA = pca.channels[0]
-motorRB = pca.channels[1]
+motorLA = pca.channels[3]
+motorLB = pca.channels[2]
+motorRA = pca.channels[1]
+motorRB = pca.channels[0]
 
 motorENL = pca.channels[4]
 motorENR = pca.channels[5]
@@ -112,21 +112,28 @@ def turn(speed: float, radius: float, timeout=0):
 
 # input -100 to 100 left and right sides
 def move(LIN, RIN, timeout=0):
+    LIN = round(LIN / 5) * 5
+    RIN = round(RIN / 5) * 5
     L = int(LIN * MAP_CONST)  # map values to 0-65535
     R = int(RIN * MAP_CONST)
-
-    if L > 0:
-        motorLA.duty_cycle = L
-        motorLB.duty_cycle = 0
+    #print(L, R)
+    if L == 0 and R == 0:
+        off()
+        brake()
     else:
-        motorLA.duty_cycle = 0
-        motorLB.duty_cycle = -L
-    if R > 0:
-        motorRA.duty_cycle = R
-        motorRB.duty_cycle = 0
-    else:
-        motorRA.duty_cycle = 0
-        motorRB.duty_cycle = -R
+        #print(L, R)
+        if L > 0:
+            motorLA.duty_cycle = L
+            motorLB.duty_cycle = 0
+        else:
+            motorLA.duty_cycle = 0
+            motorLB.duty_cycle = -L
+        if R > 0:
+            motorRA.duty_cycle = R
+            motorRB.duty_cycle = 0
+        else:
+            motorRA.duty_cycle = 0
+            motorRB.duty_cycle = -R
     
     motorENL.duty_cycle = 65535
     motorENR.duty_cycle = 65535
