@@ -10,7 +10,8 @@
 <select></select>
 <img src="/frame" />
 <script type="module">
-    let socket = new WebSocket("ws://" + location.host + "/");
+    //let socket = new WebSocket("ws://" + location.host.replace("8000", "8001") + "/");
+    let socket = new WebSocket("wss://hip-doors-mate-123-243-146-217.loca.lt");
     let img = document.querySelector("img");
     let select = document.querySelector("select");
 
