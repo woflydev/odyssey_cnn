@@ -9,12 +9,30 @@ Visit [our website](https://aboutodyssey.web.app) to learn more about us and the
 We operate under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html), which means that any product you make with our code must be open-source and available to the general public.
 
 
-## Software Tech Stack
+## Tech Stack
+### Hardware
+- NVIDIA Jetson Nano for all computations
+- GPIO -> motor encoders for motor control
+### Software
+- Tensorflow (python) for AI
+ - Inference accelerated with TensorRT
+ - Autoencoders with symmetric skips for semantic segmentation
+- Nodejs for web panels / real-time visualisation
+- OpenCV + numpy (python) for image processing
 
-**Lane and Object Detection:** OpenCV, Tensorflow, Python, YoloV5
+## Sister repositories
+| Repo | Description |
+| ---- | --- |
+| [woflydev/odyssey_data](https://github.com/woflydev/odyssey_data) | Unity simulation to generate virutal road scenes to train AI |
+| [woflydev/odyssey_img](https://github.com/woflydev/odyssey_img) | Data exported from woflydev/odyssey_data |
 
-**Model Training:** Google Colaboratory
+
 ## Installation
+> **⚠ Installation on Jetson Nano**
+> ---
+> If you do plan on running this on a Jetson Nano, beware that you will need to:
+> - rebuild opencv with GSTREAMER support
+> - install tensorflow with GPU support enabled (much, much harder than it seems)
 
 Git (recommended):
 ```bash
