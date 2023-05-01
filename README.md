@@ -218,8 +218,7 @@ import odyssey_object_cnn
  - [The entire Python project](https://python.org)
 
 
-## 
-ing and Forking
+## Contributing and Forking
 
 While we are all for contributing in open-source projects, we will not be accepting any outside contributions due to the nature of the competition. However, you are welcome to fork the code and make your own modifications as per usual.
 
