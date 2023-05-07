@@ -1,10 +1,35 @@
 //@ts-check
 const {createServer} = require("http");
 const { createReadStream, watch} = require("fs");
-const ws = require("ws");
+const {readFile} = require("fs/promises")
 const { readdir, mkdir, unlink } = require("fs/promises");
 const WebSocketServer = require("ws/lib/websocket-server");
-const path = "/dev/shm/odyssey_tmp";
+const path = "/dev/shm/odyssey_tmp/";
+
+function getFramePath(frameName){
+    return path + frameName + ".bmp";
+}
+
+/**
+ * @type {Map<string, Buffer>}
+ */
+const cache = new Map();
+
+async function cachedRead(frameName, forceUpdate = false){
+    if(cache.has(frameName) && (!forceUpdate)){
+        return cache.get(frameName)
+    }else{
+        try{
+            let c = await readFile(getFramePath(frameName))
+            cache.set(frameName, c);
+            return c
+        }catch(e){
+            console.error(e)
+            cache.delete(frameName);
+            return false;
+        }
+    }
+}
 //clear path
 const wss = new WebSocketServer({port: 8001})
 let activeSockets = [];
@@ -12,7 +37,7 @@ let activeSockets = [];
     //set up directory if not exist, clear directory if it does
     try{
         for(let name of await readdir(path)){
-            await unlink(path +  "/" + name)
+            await unlink(path + name)
         }
         console.log("Clear folder successfully")
     }catch(e){
@@ -31,12 +56,15 @@ let activeSockets = [];
             activeSockets = activeSockets.filter(s => s !== ws);
         })
     })
-    watch(path, function(change, name){
-        const file = name.replace(".png", "");
+    /*watch(path, async function(change, name){
+        const frameName = name.replace(".bmp", "");
+        //update out own cache
+        await cachedRead(frameName, true)//cache.set(frameName, await readFile(getFramePath(frameName)))
+        console.log(Date.now() + ": notifying chages of "+ frameName)
         for(const s of activeSockets){
-            s.send({change, file})
+            s.send(JSON.stringify({change, frameName}))
         } 
-    })
+    })*/
 
     // HTTP stuff
     function sendFile(res, path){
@@ -44,28 +72,41 @@ let activeSockets = [];
     }
 
     createServer(async (req, res) => {
+        if(!req.url) req.url = ""
         if(req.url === "/frames"){
             res.statusCode = 200;
             res.end(JSON.stringify(
                 (await readdir(path))
-                    .filter(a => a.endsWith(".png"))
-                    .map(a => a.replace(".png", ""))
+                    .filter(a => a.endsWith(".bmp"))
+                    .map(a => a.replace(".bmp", ""))
             ))
             return;
-        }
-        if(!req.url) req.url = ""
-        if(req.url.startsWith("/frame/")){
-            return sendFile(res, `/dev/shm/odyssey_tmp/${req.url.replace("/frame/","")}`)
-        }
-        if(req.url === "/"){
+        }else if(req.url.startsWith("/frame/")){
+            let frameName = req.url.replace("/frame/","").replace(/\?.*$/, "");
+            let d = await cachedRead(frameName);
+            if(d){
+                return res.end(d);
+            }else{
+                res.statusCode = 404;
+                return res.end("Not Found")
+            }
+        }else if(req.url.startsWith("/forceFrameUpdate/")){
+            let frameName = req.url.replace("/forceFrameUpdate/","").replace(/\?.*$/, "");
+            await cachedRead(frameName, true)
+            res.statusCode = 200
+            res.end("Frame updated.")
+            console.log(Date.now() + ": notifying chages of "+ frameName)
+            for(const s of activeSockets){
+                s.send(frameName)
+            }
+        }else if(req.url === "/"){
             return sendFile(res, 'utils/webpanel/index.html')
-        }
-        if(req.url === "/telementry"){
+        }else if(req.url === "/telementry"){
             return sendFile(res, "/dev/shm/odyssey_tmp/telementry.txt")
+        }else{
+            res.statusCode = 404;
+            res.end("404 Not Found")
         }
-        res.statusCode = 404;
-        res.end("404 Not Found")
     }).listen(8000);
-
 })()
 

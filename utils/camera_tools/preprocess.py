@@ -32,6 +32,6 @@ def preprocess(image, lane_colors_only=False):
     return cv2.bitwise_and(hsv, hsv, mask=mask), mask
 if __name__ == "__main__":
     image = cv2.imread("data/img/stolen2.png")
-    image = preprocess(image, True)
+    image, mask = preprocess(image, True)
     image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
     show_image("test",image)

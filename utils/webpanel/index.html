@@ -5,15 +5,26 @@
     }
     img{
         width: 100%;
+        display: block;
+    }
+    select{
+        display: inline
+    }
+    span{
+        float: right
     }
 </style>
 <select></select>
+<span id="fps">0fps</span>
 <img src="/frame" />
 <script type="module">
-    //let socket = new WebSocket("ws://" + location.host.replace("8000", "8001") + "/");
-    let socket = new WebSocket("wss://hip-doors-mate-123-243-146-217.loca.lt");
+    let socket = new WebSocket("ws://" + location.host.replace("8000", "8001") + "/");
+    //let socket = new WebSocket("wss://hip-doors-mate-123-243-146-217.loca.lt");
     let img = document.querySelector("img");
     let select = document.querySelector("select");
+    let fpsCounter = document.querySelector("span#fps")
+    let previousFps = [];
+    let lastFrame = Date.now();
 
     let res = await fetch("/frames")
     let frames = JSON.parse(await res.text())
@@ -27,6 +38,12 @@
     })
     function reloadImage(){
         img.src = `/frame/${selectedFrame}?refresh=${Date.now()}`
+        previousFps.push(1000 / (Date.now() - lastFrame));
+        if(previousFps.length > 10){
+            previousFps.shift()
+        }
+        fpsCounter.innerHTML =  (previousFps.reduce((a,b) => a+b, 0) / previousFps.length ).toFixed(1)+ "fps"
+        lastFrame = Date.now()
     }
     socket.onmessage = e => {
         if(selectedFrame === e.data) reloadImage()

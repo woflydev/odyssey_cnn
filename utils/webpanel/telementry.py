@@ -1,15 +1,19 @@
 import cv2
-from time import time
+import time
 import os
 PATH = '/dev/shm/odyssey_tmp'
 if not os.path.exists(PATH):
     os.makedirs(PATH)
+import urllib.request as req
 
 def show_image(name,image):
-    #debounce frequenct writes
-    #global last_wrote_image
-    #if(time() < last_wrote_image + 1):
-    #    return False
-    # last_wrote_image = time()
-    cv2.imwrite(f"{PATH}/{name}.png", image)
+    w_start = time.process_time_ns()
+    if(image.size > 90000):
+        w = image.shape[1]
+        h = image.shape[0]
+        dest_w = 300
+        image = cv2.resize(image, (dest_w, int(dest_w/w * h)))
+    cv2.imwrite(f"{PATH}/{name}.bmp", image)
+    req.urlopen(f"http://localhost:8000/forceFrameUpdate/{name}")
+    print(f"Writing image took {(time.process_time_ns() - w_start) / 1e6}ms")
     return True
