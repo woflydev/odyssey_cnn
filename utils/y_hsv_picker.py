@@ -26,12 +26,7 @@ def returnFrame(videoBool=USE_VIDEO):
         return cap.read()[1]
     else:
         return img"""
-<<<<<<< HEAD
-img = cv2.imread(".\data\img\\birds_eye_mask.jpg")
-#cap = cv2.VideoCapture('.\data\laneData.mp4')
-=======
-img = cv2.imread(".\data\img\\school_tape.jpg")
->>>>>>> 94c0dea5528e7bbc5446670d90e264958b3abed7
+img = cv2.imread(".\data\img\\venue_calibration_obstacle.png")
 def returnFrame():
     return img
     #return cap.read()[1]
