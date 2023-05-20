@@ -1,63 +1,13 @@
-"""import cv2
-import numpy as np
-
-cap = cv2.VideoCapture("data\campusData.mp4")
-
-StepSize = 5
-while(1):
-		ret, frame = cap.read()
-		
-		if (ret == False):
-			continue
-			
-		img = frame.copy()
-		blur = cv2.bilateralFilter(img,9,40,40)
-		edges = cv2.Canny(blur,50,100)
-		show_image("Canny",blur)
-		img_h = img.shape[0] - 1
-		img_w = img.shape[1] - 1
-		EdgeArray = []
-		for j in range(0,img_w,StepSize):
-				pixel = (j,0)
-				for i in range(img_h-5,0,-1):
-						if edges.item(i,j) == 255:
-								pixel = (j,i)
-								break
-				EdgeArray.append(pixel)
-		
-		for x in range(len(EdgeArray)-1):
-				cv2.line(img, EdgeArray[x], EdgeArray[x+1], (0,255,0), 1)
-		for x in range(len(EdgeArray)):
-				cv2.line(img, (x*StepSize, img_h), EdgeArray[x],(0,255,0),1)
-		show_image("result",img)
-		
-		if cv2.waitKey(10) & 0xFF == ord('q'):
-			break
-
-cv2.destroyAllWindows
-cap.release()
-"""
-
-
 import cv2
 import numpy as np
 import os
-
-a = 1
-b = 0.9
-c = 0.8
-d = 0.7
-e = 0.6
-f = 0.5
-g = 0.4
-
-
+import time
 
 BASE_SPEED = 80
-SHOW_IMAGE = True
-STEP_SIZE = 10
-
-key = ''
+SHOW_IMAGES = False
+STEP_SIZE = 5 # the less steps, the more accurate the obstacle detection
+MIN_DISTANCE = 250 # the distance to consider an obstacle (default 250, the larger the number the closer the obstacle is)
+FEELER_AMOUNT = 5 # MINIMUM OF 5 - the amount of feelers to use (default 3, the more feelers the more accurate the obstacle detection)
 
 def throttle_angle_to_thrust(r, theta):
 	try:
@@ -72,29 +22,6 @@ def throttle_angle_to_thrust(r, theta):
 	except:
 		print('error')
 
-def forward(): #... add onto the left 
-		m1_speed = 0.8 #mr
-		m2_speed = a #ml
-		print(f"Motor 1 Speed: {m1_speed}, Motor 2 Speed: {m2_speed}")
-
-def backward(): 
-		print(f"Reversing...")
-
-def right():
-		print ("Going right...")
-		#sleep(0.6) #0.5
-		forward()
- 
-def left(): 
-		print ("Going left...")
-		#sleep(0.6) #0.5
-		forward()
-
-def stop():
-		m1_speed = 0.0
-		m2_speed = 0.0
-		print(f"Motor 1 Speed: {m1_speed}, Motor 2 Speed: {m2_speed}")
-	 
 def calc_dist(p1,p2):
 		x1 = p1[0]
 		y1 = p1[1]
@@ -103,120 +30,147 @@ def calc_dist(p1,p2):
 		dist = np.sqrt((x2-x1)**2 + (y2-y1)**2)
 		return dist
 
-def getChunks(l, n):
+def get_chunks(l, n):
 		"""Yield successive n-sized chunks from l."""
 		a = []
 		for i in range(0, len(l), n):   
 			a.append(l[i:i + n])
 		return a
 
-def show_image(title, frame, show=SHOW_IMAGE):
-		if show:
-				cv2.imshow(title, frame)
+def show_image(title, frame, show=SHOW_IMAGES):
+	if show:
+		cv2.imshow(title, frame)
 
-cap = cv2.VideoCapture("data\campusData.mp4")
-currentFrame = 0
+def detect_obstacles(edges):
+	img_h, img_w = obstacle_frame.shape[:-1]
+	mid_h, mid_w = obstacle_frame.shape[:2]
 
-try:
-	 if not os.path.exists('data'):
-			os.makedirs('data')
-except OSError:
-	 print ('Error: Creating directory of data')
-
-currentAngle = 90 # straight
-while True:
-	ret, frame = cap.read()
-	
-	if (ret == False):
-		continue
-
-	show_image("original", frame)
-
-	img = frame.copy()
-	hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-	
-	lower_blue = np.array([141, 59, 0])
-	upper_blue = np.array([179, 255, 255])
-	
-	# make a masked frame to single out yellow and blue
-	masked = cv2.inRange(hsv, lower_blue, upper_blue)
-	show_image("masked", masked)
-	
-	blur = cv2.bilateralFilter(masked, 9, 40, 40)
-	edges = cv2.Canny(blur, 50, 100)
-
-	img_h = img.shape[0] - 1
-	img_w = img.shape[1] - 1
 	EdgeArray = []
 
 	for j in range(0, img_w, STEP_SIZE):
 		pixel = (j, 0)
 		
 		for i in range(img_h - 5 , 0, -1):
-			if edges.item(i,j) == 255:
-				pixel = (j,i)
+			if edges.item(i, j) == 255:
+				pixel = (j, i)
 				break
 
 		EdgeArray.append(pixel)
 
+	# obstacle edge visualization
 	for x in range(len(EdgeArray) - 1):
-		cv2.line(img, EdgeArray[x], EdgeArray[x + 1], (0, 255, 0), 1)
-
+		cv2.line(obstacle_frame, EdgeArray[x], EdgeArray[x + 1], (0, 255, 0), 1)
 	for x in range(len(EdgeArray)):
-		cv2.line(img, (x * STEP_SIZE, img_h), EdgeArray[x], (0, 255, 0), 1)
+		cv2.line(obstacle_frame, (x * STEP_SIZE, img_h), EdgeArray[x], (0, 255, 0), 1)
 
-	chunks = getChunks(EdgeArray, int(len(EdgeArray) / 3)) # 5
-	max_dist = 0
+	chunks = get_chunks(EdgeArray, int(len(EdgeArray) / FEELER_AMOUNT)) # 3 by default
 	c = []
 
-	for i in range(len(chunks)-1):        
+	for i in range(len(chunks) - 1):        
 		x_vals = []
 		y_vals = []
-		
-		for (x,y) in chunks[i]:
+
+		for (x, potential_obstacle) in chunks[i]:
 			x_vals.append(x)
-			y_vals.append(y)
+			y_vals.append(potential_obstacle)
 
 		avg_x = int(np.average(x_vals))
 		avg_y = int(np.average(y_vals))
 
-		c.append([avg_y,avg_x])
-		cv2.line(frame,(320,480),(avg_x,avg_y),(255,0,0),2)  
-		print(c)
+		c.append([avg_y, avg_x])
+		cv2.line(obstacle_frame, (mid_w // 2, mid_h), (avg_x, avg_y), (255, 0, 0), 2)  
+	
+	#print(c)
+	# this selects which of the chunks is facing forward
+	middle_feeler = len(c) // 2
+	reference_feeler = c[middle_feeler]
+	feeler_a = c[middle_feeler - 1]
+	feeler_b = c[middle_feeler + 1]
+	feeler_c = c[middle_feeler - 2]
+	feeler_d = c[middle_feeler + 2]
+	
+	#print(f"Forward Edge: {forwardEdge}")
+	# old version -> cv2.line(obstacle_frame, (320, 480), (forwardEdge[1], forwardEdge[0]), (0, 255, 0), 3)
+	cv2.line(obstacle_frame, (mid_w // 2, mid_h), (feeler_a[1], feeler_a[0]), (0, 255, 0), 10)
+	cv2.line(obstacle_frame, (mid_w // 2, mid_h), (feeler_b[1], feeler_b[0]), (0, 255, 0), 10)
+	cv2.line(obstacle_frame, (mid_w // 2, mid_h), (feeler_c[1], feeler_c[0]), (0, 255, 0), 10)
+	cv2.line(obstacle_frame, (mid_w // 2, mid_h), (feeler_d[1], feeler_d[0]), (0, 255, 0), 10)
+	cv2.line(obstacle_frame, (mid_w // 2, mid_h), (reference_feeler[1], reference_feeler[0]), (255, 255, 255), 10)
+	
+	# used for determining which way we should turn
+	#reference_feeler = c[len(c) // 2]
+	potential_obstacle = max(c)
+	#print(potential_obstacle[1])
 
-		forwardEdge = c[0]
-		print(forwardEdge)
-
-		cv2.line(frame,(320,480),(forwardEdge[1],forwardEdge[0]),(0,255,0),3)   
-		
-		y = (min(c))
-		print(y)
-		
-		if forwardEdge[0] > 250: #200 # >230 works better 
-			if y[1] < 310:
-				direction = "left"
-				print(direction)
-
-			else: 
-				right()
-				direction = "right"
-				print(direction)
+	adjustment = 0
+	if (potential_obstacle[0]) > MIN_DISTANCE:
+		cv2.line(obstacle_frame, (mid_w // 2, mid_h), (potential_obstacle[1], potential_obstacle[0]), (0, 0, 255), 10)
+		if potential_obstacle[1] < 630: # 630 is the middle angle
+			adjustment += (0.4 + potential_obstacle[0]) // (potential_obstacle[1] // 2)
 		else:
-			forward()
-			#sleep(0.005)
-			direction = "forward"
-			print(direction)
+			adjustment -= (0.4 + potential_obstacle[0]) // (potential_obstacle[1] // 2)
+	else:
+		pass
+		#do nothing if no obstacle detected
+		adjustment = 0
+		
+		#currentAngle = 90
+		#time.sleep(0.005)
 
-		if SHOW_IMAGE:
-			show_image("frame", frame)
-			show_image("Edges", edges)
-			show_image("HSV", hsv)
-			show_image("Result", img)
+	return adjustment
+
+
+"""
+Start of the Main Program
+"""
+cap = cv2.VideoCapture("data\campusData_obstacles.mp4")
+currentFrame = 0
+currentAngle = 90 # 90 is straight for throttle calc to remove negative ambiguity
+previousAdjustment = 0
+
+while True:
+	# simulates the robot calculating angles continuously
+	currentAngle = 90
+	
+	ret, frame = cap.read()
+	
+	if (ret == False or currentFrame % 1 == 1):
+		if (frame is None):
+			print("Video stream disconnected.")
+			break
+		
+		currentFrame += 1
+		continue
+
+	# hsv for purple boxes
+	lower_blue = np.array([141, 59, 0])
+	upper_blue = np.array([179, 255, 255])
+
+	obstacle_frame = frame.copy()
+	hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+	masked = cv2.inRange(hsv, lower_blue, upper_blue)
+	blur = cv2.bilateralFilter(masked, 9, 40, 40)
+	edges = cv2.Canny(blur, 50, 100)
+
+	currentAngle += detect_obstacles(edges)
+
+	pwm_left, pwm_right = throttle_angle_to_thrust(BASE_SPEED, currentAngle - 90)
+	print(f"Motor 1 Speed: {int(pwm_left)}, Motor 2 Speed: {int(pwm_right)}, Current Angle: {currentAngle}")
+
+	show_image("original", frame)
+	show_image("frame", frame)
+	show_image("HSV", hsv)
+	show_image("Masked", masked)
+	show_image("Blur", blur)
+	show_image("Edges", edges)
+	cv2.imshow("Result", obstacle_frame)
+
+	currentFrame += 1
+
+	time.sleep(0.08)
 
 	if cv2.waitKey(10) & 0xFF == ord('q'):
 		break
-			
 
 cv2.destroyAllWindows
 cap.release()
-				 
