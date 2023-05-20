@@ -5,9 +5,9 @@ import time
 
 BASE_SPEED = 80
 SHOW_IMAGES = False
-STEP_SIZE = 5 # the less steps, the more accurate the obstacle detection
-MIN_DISTANCE = 250 # the distance to consider an obstacle (default 250, the larger the number the closer the obstacle is)
-FEELER_AMOUNT = 5 # MINIMUM OF 5 - the amount of feelers to use (default 3, the more feelers the more accurate the obstacle detection)
+STEP_SIZE = 5 # DEFAULT 5 - the less steps, the more accurate the obstacle detection
+MIN_DISTANCE = 250 # DEFAULT 250 - the distance to consider an obstacle (the larger the number the closer the obstacle is)
+FEELER_AMOUNT = 5 # MINIMUM OF 5 - the amount of feelers to use (the more feelers the more accurate the obstacle detection)
 
 def throttle_angle_to_thrust(r, theta):
 	try:
