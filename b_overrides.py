@@ -204,72 +204,76 @@ def detect_uturns(edges):
 """
 Start of the Main Program
 """
-cap = cv2.VideoCapture("data\campusData.mp4")
-currentFrame = 0
-currentAngle = 90 # 90 is straight for throttle calc to remove negative ambiguity
-previousAdjustment = 0
+def main():
+	cap = cv2.VideoCapture("data\campusData.mp4")
+	currentFrame = 0
+	currentAngle = 90 # 90 is straight for throttle calc to remove negative ambiguity
+	previousAdjustment = 0
 
-while True:
-	# simulates the robot calculating angles continuously
-	currentAngle = 90
-	
-	ret, frame = cap.read()
-	
-	if (ret == False or currentFrame % 1 == 1):
-		if (frame is None):
-			print("Video stream disconnected.")
-			break
+	while True:
+		# simulates the robot calculating angles continuously
+		currentAngle = 90
 		
+		ret, frame = cap.read()
+		
+		if (ret == False or currentFrame % 1 == 1):
+			if (frame is None):
+				print("Video stream disconnected.")
+				break
+			
+			currentFrame += 1
+			continue
+
+		# hsv for purple boxes
+		lower_purple = np.array([141, 59, 0])
+		upper_purple = np.array([179, 255, 255])
+
+		# hsv for blue and yellow
+		lower_blue = np.array([0, 76, 158])
+		upper_blue = np.array([179, 255, 255])
+		
+		lower_yellow = np.array([141, 59, 0])
+		upper_yellow = np.array([179, 255, 255])
+
+		obstacle_frame = frame.copy()
+		uturn_frame = frame.copy()
+		hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+		obstacle_mask = cv2.inRange(hsv, lower_purple, upper_purple)
+		obstacle_blur = cv2.bilateralFilter(obstacle_mask, 9, 40, 40)
+		obstacle_edges = cv2.Canny(obstacle_blur, 50, 100)
+
+		uturn_mask_b = cv2.inRange(hsv, lower_blue, upper_blue)
+		uturn_mask_y = cv2.inRange(hsv, lower_yellow, upper_yellow)
+		#uturn_mask = cv2.bitwise_or(uturn_mask_b, uturn_mask_y)
+		uturn_blur = cv2.bilateralFilter(uturn_mask_b, 9, 40, 40)
+		uturn_edges = cv2.Canny(uturn_blur, 50, 100)
+
+		# overrides for the current angle
+		currentAngle += detect_uturns(uturn_edges)
+		currentAngle += detect_obstacles(obstacle_edges)
+
+		pwm_left, pwm_right = throttle_angle_to_thrust(BASE_SPEED, currentAngle - 90)
+		print(f"Motor 1 Speed: {int(pwm_left)}, Motor 2 Speed: {int(pwm_right)}, Current Angle: {currentAngle}")
+
+		show_image("original", frame)
+		show_image("HSV", hsv)
+		show_image("Obstacle Mask", obstacle_mask)
+		show_image("U-Turn Mask", uturn_mask_b)
+		#show_image("Blur", obstacle_blur)
+		show_image("Obstacle Edges", obstacle_edges)
+		show_image("U-Turn Edges", uturn_edges)
+		cv2.imshow("Obstacles Result", obstacle_frame)
+		cv2.imshow("U-Turn Result", uturn_frame)
+
 		currentFrame += 1
-		continue
 
-	# hsv for purple boxes
-	lower_purple = np.array([141, 59, 0])
-	upper_purple = np.array([179, 255, 255])
+		#time.sleep(0.08)
 
-	# hsv for blue and yellow
-	lower_blue = np.array([0, 76, 158])
-	upper_blue = np.array([179, 255, 255])
-	
-	lower_yellow = np.array([141, 59, 0])
-	upper_yellow = np.array([179, 255, 255])
+		if cv2.waitKey(10) & 0xFF == ord('q'):
+			break
 
-	obstacle_frame = frame.copy()
-	uturn_frame = frame.copy()
-	hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-	obstacle_mask = cv2.inRange(hsv, lower_purple, upper_purple)
-	obstacle_blur = cv2.bilateralFilter(obstacle_mask, 9, 40, 40)
-	obstacle_edges = cv2.Canny(obstacle_blur, 50, 100)
+	cv2.destroyAllWindows
+	cap.release()
 
-	uturn_mask_b = cv2.inRange(hsv, lower_blue, upper_blue)
-	uturn_mask_y = cv2.inRange(hsv, lower_yellow, upper_yellow)
-	#uturn_mask = cv2.bitwise_or(uturn_mask_b, uturn_mask_y)
-	uturn_blur = cv2.bilateralFilter(uturn_mask_b, 9, 40, 40)
-	uturn_edges = cv2.Canny(uturn_blur, 50, 100)
-
-	# overrides for the current angle
-	currentAngle += detect_uturns(uturn_edges)
-	currentAngle += detect_obstacles(obstacle_edges)
-
-	pwm_left, pwm_right = throttle_angle_to_thrust(BASE_SPEED, currentAngle - 90)
-	print(f"Motor 1 Speed: {int(pwm_left)}, Motor 2 Speed: {int(pwm_right)}, Current Angle: {currentAngle}")
-
-	show_image("original", frame)
-	show_image("HSV", hsv)
-	show_image("Obstacle Mask", obstacle_mask)
-	show_image("U-Turn Mask", uturn_mask_b)
-	#show_image("Blur", obstacle_blur)
-	show_image("Obstacle Edges", obstacle_edges)
-	show_image("U-Turn Edges", uturn_edges)
-	cv2.imshow("Obstacles Result", obstacle_frame)
-	cv2.imshow("U-Turn Result", uturn_frame)
-
-	currentFrame += 1
-
-	#time.sleep(0.08)
-
-	if cv2.waitKey(10) & 0xFF == ord('q'):
-		break
-
-cv2.destroyAllWindows
-cap.release()
+if __name__ == "__main__":
+	main()
