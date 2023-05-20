@@ -7,7 +7,9 @@ BASE_SPEED = 80
 SHOW_IMAGES = True
 STEP_SIZE = 5 # DEFAULT 5 - the less steps, the more accurate the obstacle detection
 MIN_DISTANCE = 250 # DEFAULT 250 - the distance to consider an obstacle (the larger the number the closer the obstacle is)
+MIN_UTURN_THRESHOLD = 300 # DEFAULT 400 - the distance to consider a u-turn (the larger the number the closer the u-turn has to be)
 FEELER_AMOUNT = 5 # MINIMUM OF 5 - the amount of feelers to use (the more feelers the more accurate the obstacle detection)
+MIDDLE_ANGLE = 635 # DEFAULT 635 - use the included reference_feeler to determine the middle angle
 
 def throttle_angle_to_thrust(r, theta):
 	try:
@@ -70,9 +72,9 @@ def detect_obstacles(edges):
 		x_vals = []
 		y_vals = []
 
-		for (x, potential_obstacle) in chunks[i]:
+		for (x, y) in chunks[i]:
 			x_vals.append(x)
-			y_vals.append(potential_obstacle)
+			y_vals.append(y)
 
 		avg_x = int(np.average(x_vals))
 		avg_y = int(np.average(y_vals))
@@ -98,14 +100,14 @@ def detect_obstacles(edges):
 	cv2.line(obstacle_frame, (mid_w // 2, mid_h), (reference_feeler[1], reference_feeler[0]), (255, 255, 255), 10)
 	
 	# used for determining which way we should turn
-	#reference_feeler = c[len(c) // 2]
+	reference_feeler = c[len(c) // 2]
 	potential_obstacle = max(c)
-	#print(potential_obstacle[1])
+	#print(reference_feeler[1])
 
 	adjustment = 0
 	if (potential_obstacle[0]) > MIN_DISTANCE:
 		cv2.line(obstacle_frame, (mid_w // 2, mid_h), (potential_obstacle[1], potential_obstacle[0]), (0, 0, 255), 10)
-		if potential_obstacle[1] < 630: # 630 is the middle angle
+		if potential_obstacle[1] < MIDDLE_ANGLE: # 635 is the middle
 			adjustment += (0.4 + potential_obstacle[0]) // (potential_obstacle[1] // 2)
 		else:
 			adjustment -= (0.4 + potential_obstacle[0]) // (potential_obstacle[1] // 2)
@@ -120,8 +122,8 @@ def detect_obstacles(edges):
 	return adjustment
 
 def detect_uturns(edges):
-	img_h, img_w = obstacle_frame.shape[:-1]
-	mid_h, mid_w = obstacle_frame.shape[:2]
+	img_h, img_w = uturn_frame.shape[:-1]
+	mid_h, mid_w = uturn_frame.shape[:2]
 
 	EdgeArray = []
 
@@ -137,26 +139,27 @@ def detect_uturns(edges):
 
 	# obstacle edge visualization
 	for x in range(len(EdgeArray) - 1):
-		cv2.line(obstacle_frame, EdgeArray[x], EdgeArray[x + 1], (0, 255, 0), 1)
+		cv2.line(uturn_frame, EdgeArray[x], EdgeArray[x + 1], (0, 255, 0), 1)
 	for x in range(len(EdgeArray)):
-		cv2.line(obstacle_frame, (x * STEP_SIZE, img_h), EdgeArray[x], (0, 255, 0), 1)
+		cv2.line(uturn_frame, (x * STEP_SIZE, img_h), EdgeArray[x], (0, 255, 0), 1)
 
 	chunks = get_chunks(EdgeArray, int(len(EdgeArray) / FEELER_AMOUNT)) # 3 by default
 	c = []
 
-	for i in range(len(chunks) - 1):        
+	for i in range(len(chunks) - 1):
 		x_vals = []
 		y_vals = []
 
-		for (x, potential_obstacle) in chunks[i]:
+		# switch back to potential_obstacle for y if things break
+		for (x, y) in chunks[i]:
 			x_vals.append(x)
-			y_vals.append(potential_obstacle)
+			y_vals.append(y)
 
 		avg_x = int(np.average(x_vals))
 		avg_y = int(np.average(y_vals))
 
 		c.append([avg_y, avg_x])
-		cv2.line(obstacle_frame, (mid_w // 2, mid_h), (avg_x, avg_y), (255, 0, 0), 2)  
+		cv2.line(uturn_frame, (mid_w // 2, mid_h), (avg_x, avg_y), (255, 0, 0), 2)  
 	
 	#print(c)
 	# this selects which of the chunks is facing forward
@@ -169,24 +172,25 @@ def detect_uturns(edges):
 	
 	#print(f"Forward Edge: {forwardEdge}")
 	# old version -> cv2.line(obstacle_frame, (320, 480), (forwardEdge[1], forwardEdge[0]), (0, 255, 0), 3)
-	cv2.line(obstacle_frame, (mid_w // 2, mid_h), (feeler_a[1], feeler_a[0]), (255, 0, 0), 10)
-	cv2.line(obstacle_frame, (mid_w // 2, mid_h), (feeler_b[1], feeler_b[0]), (255, 0, 0), 10)
-	cv2.line(obstacle_frame, (mid_w // 2, mid_h), (feeler_c[1], feeler_c[0]), (255, 0, 0), 10)
-	cv2.line(obstacle_frame, (mid_w // 2, mid_h), (feeler_d[1], feeler_d[0]), (255, 0, 0), 10)
-	cv2.line(obstacle_frame, (mid_w // 2, mid_h), (reference_feeler[1], reference_feeler[0]), (255, 255, 255), 10)
+	cv2.line(uturn_frame, (mid_w // 2, mid_h), (feeler_a[1], feeler_a[0]), (255, 0, 0), 10)
+	cv2.line(uturn_frame, (mid_w // 2, mid_h), (feeler_b[1], feeler_b[0]), (255, 0, 0), 10)
+	cv2.line(uturn_frame, (mid_w // 2, mid_h), (feeler_c[1], feeler_c[0]), (255, 0, 0), 10)
+	cv2.line(uturn_frame, (mid_w // 2, mid_h), (feeler_d[1], feeler_d[0]), (255, 0, 0), 10)
+	cv2.line(uturn_frame, (mid_w // 2, mid_h), (reference_feeler[1], reference_feeler[0]), (255, 255, 255), 10)
 	
 	# used for determining which way we should turn
 	#reference_feeler = c[len(c) // 2]
-	potential_obstacle = max(c)
-	#print(potential_obstacle[1])
+	# we reference the middle one because it's the one that's facing forward
+	potential_uturn = max(c)
+	#print(potential_uturn[1])
 
 	adjustment = 0
-	if (potential_obstacle[0]) > MIN_DISTANCE:
-		cv2.line(obstacle_frame, (mid_w // 2, mid_h), (potential_obstacle[1], potential_obstacle[0]), (0, 0, 255), 10)
-		if potential_obstacle[1] < 630: # 630 is the middle angle
-			adjustment += (0.4 + potential_obstacle[0]) // (potential_obstacle[1] // 2)
+	if (potential_uturn[0]) > MIN_UTURN_THRESHOLD:
+		cv2.line(uturn_frame, (mid_w // 2, mid_h), (potential_uturn[1], potential_uturn[0]), (0, 0, 255), 10)
+		if potential_uturn[1] < MIDDLE_ANGLE: # 630 is the middle angle
+			adjustment += 20 + potential_uturn[0] * 0.03
 		else:
-			adjustment -= (0.4 + potential_obstacle[0]) // (potential_obstacle[1] // 2)
+			adjustment -= 20 + potential_uturn[0] * 0.03
 	else:
 		pass
 		#do nothing if no obstacle detected
@@ -200,7 +204,7 @@ def detect_uturns(edges):
 """
 Start of the Main Program
 """
-cap = cv2.VideoCapture("data\campusData_obstacles.mp4")
+cap = cv2.VideoCapture("data\campusData.mp4")
 currentFrame = 0
 currentAngle = 90 # 90 is straight for throttle calc to remove negative ambiguity
 previousAdjustment = 0
@@ -224,13 +228,14 @@ while True:
 	upper_purple = np.array([179, 255, 255])
 
 	# hsv for blue and yellow
-	lower_blue = np.array([141, 59, 0])
+	lower_blue = np.array([0, 76, 158])
 	upper_blue = np.array([179, 255, 255])
 	
 	lower_yellow = np.array([141, 59, 0])
 	upper_yellow = np.array([179, 255, 255])
 
 	obstacle_frame = frame.copy()
+	uturn_frame = frame.copy()
 	hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 	obstacle_mask = cv2.inRange(hsv, lower_purple, upper_purple)
 	obstacle_blur = cv2.bilateralFilter(obstacle_mask, 9, 40, 40)
@@ -238,8 +243,8 @@ while True:
 
 	uturn_mask_b = cv2.inRange(hsv, lower_blue, upper_blue)
 	uturn_mask_y = cv2.inRange(hsv, lower_yellow, upper_yellow)
-	uturn_mask = cv2.bitwise_or(uturn_mask_b, uturn_mask_y)
-	uturn_blur = cv2.bilateralFilter(uturn_mask, 9, 40, 40)
+	#uturn_mask = cv2.bitwise_or(uturn_mask_b, uturn_mask_y)
+	uturn_blur = cv2.bilateralFilter(uturn_mask_b, 9, 40, 40)
 	uturn_edges = cv2.Canny(uturn_blur, 50, 100)
 
 	# overrides for the current angle
@@ -252,10 +257,12 @@ while True:
 	show_image("original", frame)
 	show_image("HSV", hsv)
 	show_image("Obstacle Mask", obstacle_mask)
-	show_image("U-Turn Mask", uturn_mask)
+	show_image("U-Turn Mask", uturn_mask_b)
 	#show_image("Blur", obstacle_blur)
-	show_image("Edges", obstacle_edges)
-	cv2.imshow("Result", obstacle_frame)
+	show_image("Obstacle Edges", obstacle_edges)
+	show_image("U-Turn Edges", uturn_edges)
+	cv2.imshow("Obstacles Result", obstacle_frame)
+	cv2.imshow("U-Turn Result", uturn_frame)
 
 	currentFrame += 1
 
