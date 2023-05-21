@@ -4,7 +4,7 @@ import os
 import time
 
 BASE_SPEED = 80
-SHOW_IMAGES = True
+SHOW_IMAGES = False
 STEP_SIZE = 5 # DEFAULT 5 - the less steps, the more accurate the obstacle detection
 MIN_DISTANCE = 250 # DEFAULT 250 - the distance to consider an obstacle (the larger the number the closer the obstacle is)
 MIN_UTURN_THRESHOLD = 300 # DEFAULT 400 - the distance to consider a u-turn (the larger the number the closer the u-turn has to be)
@@ -43,7 +43,7 @@ def show_image(title, frame, show=SHOW_IMAGES):
 	if show:
 		cv2.imshow(title, frame)
 
-def detect_obstacles(edges):
+def detect_obstacles(edges, obstacle_frame):
 	img_h, img_w = obstacle_frame.shape[:-1]
 	mid_h, mid_w = obstacle_frame.shape[:2]
 
@@ -101,8 +101,9 @@ def detect_obstacles(edges):
 	
 	# used for determining which way we should turn
 	reference_feeler = c[len(c) // 2]
+	print(reference_feeler[1])
+
 	potential_obstacle = max(c)
-	#print(reference_feeler[1])
 
 	adjustment = 0
 	if (potential_obstacle[0]) > MIN_DISTANCE:
@@ -119,9 +120,9 @@ def detect_obstacles(edges):
 		#currentAngle = 90
 		#time.sleep(0.005)
 
-	return adjustment
+	return adjustment, obstacle_frame
 
-def detect_uturns(edges):
+def detect_uturns(edges, uturn_frame):
 	img_h, img_w = uturn_frame.shape[:-1]
 	mid_h, mid_w = uturn_frame.shape[:2]
 
@@ -199,7 +200,7 @@ def detect_uturns(edges):
 		#currentAngle = 90
 		#time.sleep(0.005)
 
-	return adjustment
+	return adjustment, uturn_frame
 
 """
 Start of the Main Program
@@ -208,7 +209,6 @@ def main():
 	cap = cv2.VideoCapture("data\campusData.mp4")
 	currentFrame = 0
 	currentAngle = 90 # 90 is straight for throttle calc to remove negative ambiguity
-	previousAdjustment = 0
 
 	while True:
 		# simulates the robot calculating angles continuously
@@ -225,7 +225,10 @@ def main():
 			continue
 
 		# hsv for purple boxes
-		lower_purple = np.array([141, 59, 0])
+		#lower_purple = np.array([141, 59, 0]) <- campusData.mp4
+		#upper_purple = np.array([179, 255, 255])
+
+		lower_purple = np.array([124, 0, 0])
 		upper_purple = np.array([179, 255, 255])
 
 		# hsv for blue and yellow
@@ -249,8 +252,10 @@ def main():
 		uturn_edges = cv2.Canny(uturn_blur, 50, 100)
 
 		# overrides for the current angle
-		currentAngle += detect_uturns(uturn_edges)
-		currentAngle += detect_obstacles(obstacle_edges)
+		adj_ut, uturn_frame = detect_uturns(uturn_edges, uturn_frame)
+		adj_ob, obstacle_frame = detect_obstacles(obstacle_edges, obstacle_frame)
+
+		currentAngle += adj_ut + adj_ob
 
 		pwm_left, pwm_right = throttle_angle_to_thrust(BASE_SPEED, currentAngle - 90)
 		print(f"Motor 1 Speed: {int(pwm_left)}, Motor 2 Speed: {int(pwm_right)}, Current Angle: {currentAngle}")

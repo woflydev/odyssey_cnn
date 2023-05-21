@@ -26,7 +26,7 @@ def returnFrame(videoBool=USE_VIDEO):
         return cap.read()[1]
     else:
         return img"""
-img = cv2.imread(".\data\img\\venue_calibration_obstacle.png")
+img = cv2.imread(".\data\img\\newcamera.test.png")
 def returnFrame():
     return img
     #return cap.read()[1]
