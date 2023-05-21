@@ -42,16 +42,17 @@ def gstreamer_pipeline(
         )
     )
 
-
 def show_camera():
     # To flip the image, modify the flip_method parameter (0 and 2 are the most common)
-    pipeline = gstreamer_pipeline(flip_method=2)
-    print(pipeline)
-    video_capture = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
+    #pipeline = gstreamer_pipeline(flip_method=2)
+    #print(pipeline)
+    #video_capture = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
+    video_capture = cv2.VideoCapture(0)
+    #video_capture = cv2.VideoCapture("http://192.168.227.41:8080/video")
     if video_capture.isOpened():
         ret_val, frame = video_capture.read()
         cv2.imwrite("camera.test.png", frame)
-        print("qutting")
+        print("done")
         video_capture.release()
         cv2.destroyAllWindows()
     else:
