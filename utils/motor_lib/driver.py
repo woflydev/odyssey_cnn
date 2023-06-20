@@ -1,11 +1,12 @@
 # from board import SCL, SDA
 # import busio
 # from adafruit_pca9685 import PCA9685
+import signal
 from time import sleep
 import math
-from pyfirmata import Arduino, util
+from pyfirmata import Arduino, util, pyfirmata
 
-PWM_FREQ = 1000      # (Hz) max is 1.5 kHz
+PWM_FREQ = 3906  # (Hz) max is 1.5 kHz
 MAP_CONST = 1 / 120   # 1 / 120 to limit speed below 100% duty cycle
 HALF_WIDTH = 0.1          # Half of the width of droid, in metres
 MAX_CENT_ACC = 30000   # Maximum "centripetal acceleration" the robot is allowed to undergo. UNITS ARE DODGY, MUST BE DETERMIEND BY EXPERIMENTATION
@@ -23,6 +24,16 @@ SERIAL_PORT = '/dev/ttyACM0' # Serial port for Arduino
 #   PWM -> 10
 
 # I_Sense -> 7
+
+def exit_handler(signal, frame):
+    print("Stopping motors...")
+    off()
+    print("Cleaning up...")  
+    print("Done.")  
+    board.exit()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, exit_handler)
 
 board = Arduino(SERIAL_PORT)
 print("Communication Successfully started")
@@ -149,6 +160,9 @@ def move(LIN, RIN, timeout=0):
     if timeout > 0:
         sleep(timeout / 1000)
         off()
+
+def readCurrent():
+    return Isense.read()
 
 # Drive pins other than motor pins
 # def drivePin(pin, val):
