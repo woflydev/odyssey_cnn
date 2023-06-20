@@ -5,6 +5,7 @@ import signal
 from time import sleep
 import math
 from pyfirmata import Arduino, util, pyfirmata
+import sys 
 
 PWM_FREQ = 3906  # (Hz) max is 1.5 kHz
 MAP_CONST = 1 / 120   # 1 / 120 to limit speed below 100% duty cycle
@@ -26,7 +27,7 @@ SERIAL_PORT = '/dev/ttyACM0' # Serial port for Arduino
 # I_Sense -> 7
 
 def exit_handler(signal, frame):
-    print("Stopping motors...")
+    print("\n...\nStopping motors...")
     off()
     print("Cleaning up...")  
     print("Done.")  
