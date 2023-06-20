@@ -1,6 +1,7 @@
 #numpy
 #opencv-python
-adafruit-blinka
-adafruit-circuitpython-pca9685
+# adafruit-blinka
+# adafruit-circuitpython-pca9685
 pydualsense
-i2cdev
+pyfirmata
+# i2cdev
