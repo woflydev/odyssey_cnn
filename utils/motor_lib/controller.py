@@ -15,7 +15,7 @@ ds.triggerR.setMode(TriggerModes.Pulse)
 ds.conType.BT = False  		# set connection type to bluetooth
 
 lightToggle = 0
-drivePin(15, 0)
+# drivePin(15, 0)
 video_type = cv2.VideoWriter_fourcc(*'MJPG')
 video_overlay = cv2.VideoWriter("data/hi.avi", video_type, 10.0, (640, 480))
 cap = cv2.VideoCapture(0)
@@ -51,4 +51,4 @@ while True:
 
     print(f'Motor inputs [{left}, {right}]')
     move(left, right)
-    drivePin(15, light)
+    # drivePin(15, light)
