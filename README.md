@@ -1,7 +1,12 @@
+# Project Odyssey 2023: REDEMPTION AT LAST!
 
-# Project Odyssey 2023
+Our hard work finally paid off, as we were crowned the **Best Overall** and **1st Place** champions of the Droid Racing Challenge 2023! Thank you so much to the [QUT Robotics Club](https://www.instagram.com/p/Cu9Vgmuro8u/?img_index=1) for hosting such an awesome event and for allowing us to attend!
+- [Instagram](https://www.instagram.com/p/Cu8mdIEtegS/?img_index=1)
+- [Twitter](https://twitter.com/QUT/status/1679271733004578818)
 
-Visit [our website](https://aboutodyssey.web.app) to learn more about us and the team. We are a passionate group of individuals developing a custom made robot designed to compete with universities around Australia in the [Droid Racing Competition](https://qutrobotics.com/droid-racing-challenge/). The DRC is held annually in July with teams from all around the country flying to Brisbane's QUT Campus to compete. Last year, we finished honourably at 7th, out of 15 national universities, beating both the University of New South Wales (UNSW) and the University of Sydney (USYD), becoming the youngest ever team to compete in DRC history.
+# About Us
+
+Visit [our website](https://aboutodyssey.web.app) to learn more about us and the team. We are a passionate group of individuals developing a custom made robot designed to compete with universities around Australia in the [Droid Racing Challenge](https://qutrobotics.com/droid-racing-challenge/). The DRC is held annually in July with teams from all around the country flying to Brisbane's QUT Gardens Campus to compete. Last year, we finished honourably at 7th, out of 15 national universities, beating both the University of New South Wales (UNSW) and the University of Sydney (USYD), becoming the youngest ever team to compete in DRC history.
 
 
 ## License
