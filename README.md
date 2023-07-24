@@ -4,6 +4,8 @@ Our hard work finally paid off, as we were crowned the **Best Overall** and **1s
 - [Instagram](https://www.instagram.com/p/Cu8mdIEtegS/?img_index=1)
 - [Twitter](https://twitter.com/QUT/status/1679271733004578818)
 
+![team photo](https://github.com/woflydev/odyssey_cnn/blob/main/readme/team.jpg)
+
 # About Us
 
 Visit [our website](https://aboutodyssey.web.app) to learn more about us and the team. We are a passionate group of individuals developing a custom made robot designed to compete with universities around Australia in the [Droid Racing Challenge](https://qutrobotics.com/droid-racing-challenge/). The DRC is held annually in July with teams from all around the country flying to Brisbane's QUT Gardens Campus to compete. Last year, we finished honourably at 7th, out of 15 national universities, beating both the University of New South Wales (UNSW) and the University of Sydney (USYD), becoming the youngest ever team to compete in DRC history.
@@ -242,6 +244,8 @@ See `z_opencv_driver.py` for the pure OpenCV implementation of our custom lane d
 ## Feedback
 
 If you have any suggestions for our project and competition, you can reach us  from our website [here](https://aboutodyssey.web.app/). Alternatively, you can open an issue on our repository.
+
+![our robot](https://github.com/woflydev/odyssey_cnn/blob/main/readme/robit.jpg)
 
 
 ## Support
