@@ -6,6 +6,7 @@ Our hard work finally paid off, as we were crowned the **Best Overall** and **1s
 
 The winning algorithm we ended up using is located in [woflydev/odyssey_lsd](https://github.com/woflydev/odyssey_lsd). Take a look if you're interested!
 
+### [>> CLICK HERE FOR A DEMONSTRATION OF THE ROBOT RUNNING WITH OUR CODE <<](https://photos.app.goo.gl/apWUW5tePbo4QnF27)
 
 ![team photo](https://github.com/woflydev/odyssey_cnn/blob/main/readme/team.jpg)
 
