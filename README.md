@@ -47,6 +47,13 @@ We operate under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.htm
 > - rebuild opencv with GSTREAMER support
 > - install tensorflow with GPU support enabled (much, much harder than it seems)
 
+> **⚠ Deprecated API Documentation**
+> ---
+> If you plan on using our API and code, beware that:
+> - some documentation below is outdated
+> - we do not plan on updating the documentation here
+> - instead, check [woflydev/odyssey_docs](https://github.com/woflydev/odyssey_docs) for future reference.
+
 Git (recommended):
 ```bash
 git clone https://github.com/woflydev/odyssey_cnn.git
@@ -64,7 +71,7 @@ pip install -r requirements.txt
 
 ## Usage/Examples
 
-Usage of our custom motor controller based on the Raspberry Pi's GPIO is as follows:
+Usage of our custom motor controller is as follows:
 ```python
 from driver.driver import move, off
 
@@ -132,31 +139,18 @@ y_data_extractor.py file_path file_name output_dir
 | `output_dir` | `valid system path` | **Required**, Directory in which extracted data should be outputted. |
 
 
-#### Lane Detection with CNN (to do)
+#### Lane Detection with CNN
 
-```python
-import odyssey_cnn
+Please check [woflydev/odyssey_lsd](https://github.com/woflydev/odyssey_lsd) for our winning CNN Lane Segment Detection.
+
+```bash
+git clone https://github.com/woflydev/odyssey_lsd.git
+cd odyssey_lsd
+pip install -r requirements.txt
+sudo chmod +x permissions.sh     # required for Arduino port access
 ```
 
-| Parameter | Type     | Description                       |
-| :-------- | :------- | :-------------------------------- |
-| `x`      | `x` | x |
-| `x`      | `x` | x |
-| `x`      | `x` | x |
-
-
-#### Object Detection with CNN (to do)
-
-```python
-import odyssey_object_cnn
-```
-
-| Parameter | Type     | Description                       |
-| :-------- | :------- | :-------------------------------- |
-| `x`      | `x` | x |
-| `x`      | `x` | x |
-| `x`      | `x` | x |
-
+For more ways of using the LSD repository, click [here](https://github.com/woflydev/odyssey_lsd).
 
 ## File and Folder Structure
 
@@ -220,7 +214,6 @@ import odyssey_object_cnn
 - [@AwesomeGuy000](https://github.com/awesomeguy000)
 - [@xdBeanjo](https://github.com/xdBeanjo)
 - [@hashtable2020](https://github.com/hashtable2020)
-- [@echan103](https://github.com/echan103)
 - [@kelco-chan](https://github.com/kelco-chan)
 
 ## Acknowledgements
