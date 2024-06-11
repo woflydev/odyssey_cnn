@@ -38,8 +38,6 @@ We operate under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.htm
 | [woflydev/odyssey_lsd](https://github.com/woflydev/odyssey_lsd) | New Lane Segment Detection implementation for Project Odyssey. |
 | [woflydev/odyssey_data](https://github.com/woflydev/odyssey_data) | Unity simulation to generate virtual road scenes to train AI |
 | [woflydev/odyssey_img](https://github.com/woflydev/odyssey_img) | Data exported from woflydev/odyssey_data |
-| [woflydev/odyssey_docs](https://github.com/woflydev/odyssey_docs) | Upcoming documentation for Project Odyssey files and regular progress updates. |
-
 
 ## Installation
 > **⚠ Installation on Jetson Nano**
@@ -53,7 +51,6 @@ We operate under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.htm
 > If you plan on using our API and code, beware that:
 > - some documentation below is outdated
 > - we do not plan on updating the documentation here
-> - instead, check [woflydev/odyssey_docs](https://github.com/woflydev/odyssey_docs) for future reference.
 
 Git (recommended):
 ```bash
