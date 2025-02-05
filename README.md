@@ -10,9 +10,13 @@ The winning algorithm we ended up using is located in [woflydev/odyssey_lsd](htt
 
 ![team photo](https://github.com/woflydev/odyssey_cnn/blob/main/readme/team.jpg)
 
-# About Us
+# About Us (2025 Update)
 
-Visit [our website](https://aboutodyssey.web.app) to learn more about us and the team. We are a passionate group of individuals developing a custom made robot designed to compete with universities around Australia in the [Droid Racing Challenge](https://qutrobotics.com/droid-racing-challenge/). The DRC is held annually in July with teams from all around the country flying to Brisbane's QUT Gardens Campus to compete. Last year, we finished honourably at 7th, out of 15 national universities, beating both the University of New South Wales (UNSW) and the University of Sydney (USYD), becoming the youngest ever team to compete in DRC history.
+The Odyssey Robotics brand and team has been retired. Our old website can still be accessed [here](https://aboutodyssey.web.app).
+Visit [our new website](https://theseusrobotics.org) to learn more about us and the team.
+
+# About Odyssey Robotics
+We are a passionate group of individuals developing a custom robot designed to compete with universities around Australia in the [Droid Racing Challenge](https://qutrobotics.com/droid-racing-challenge/). The DRC is held annually in July with teams from all around the country flying to Brisbane's QUT Gardens Campus to compete. Last year, we finished honourably at 7th, out of 15 national universities, beating both the University of New South Wales (UNSW) and the University of Sydney (USYD), becoming the youngest ever team to compete in DRC history.
 
 
 ## License
@@ -49,8 +53,8 @@ We operate under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.htm
 > **⚠ Deprecated API Documentation**
 > ---
 > If you plan on using our API and code, beware that:
-> - some documentation below is outdated
-> - we do not plan on updating the documentation here
+> - some, if not all documentation below is outdated
+> - we do not plan on updating the documentation
 
 Git (recommended):
 ```bash
@@ -92,8 +96,6 @@ theta = 0 # where 'theta' is desired heading, with 0 being straight
 left_speed = throttle_calc(r, theta)[0]
 right_speed = throttle_calc(r, theta)[1]
 ```
-
-More functions can be found below.
 
 ## API Reference
 
@@ -139,71 +141,13 @@ y_data_extractor.py file_path file_name output_dir
 
 #### Lane Detection with CNN
 
-Please check [woflydev/odyssey_lsd](https://github.com/woflydev/odyssey_lsd) for our winning CNN Lane Segment Detection.
+Please check [woflydev/odyssey_lsd](https://github.com/woflydev/odyssey_lsd) for our final CNN Lane Segment Detection.
 
 ```bash
 git clone https://github.com/woflydev/odyssey_lsd.git
 cd odyssey_lsd
 pip install -r requirements.txt
 sudo chmod +x permissions.sh     # required for Arduino port access
-```
-
-For more ways of using the LSD repository, click [here](https://github.com/woflydev/odyssey_lsd).
-
-## File and Folder Structure
-
-```
-📦 odyssey_cnn/
-├── README.md
-├── data
-│   ├── TestTrack.mp4
-│   ├── img
-│   │   ├── 40deg dep.jpg
-│   │   ├── 45dep.jpg
-│   │   ├── depth_correction.jpg
-│   │   ├── lane_dashcam_hsv.png
-│   │   ├── school_tape.jpg
-│   │   ├── school_tape2.jpg
-│   │   ├── school_tape3.jpg
-│   │   ├── school_tape4.jpg
-│   │   ├── school_tape5.jpg
-│   │   ├── school_tape6.jpg
-│   │   ├── self_car_data_hsv.png
-│   │   ├── test_lane_video2_hsv.png
-│   │   ├── test_white.jpg
-│   │   └── video_extract.png
-│   ├── lane_dashcam.mp4
-│   ├── models
-│   │   ├── nav
-│   │   │   └── train.ipynb
-│   │   └── obj
-│   │       └── object_model_placeholder
-│   ├── self_car_data.mp4
-│   └── test_lane_video.mp4
-├── dependencies.sh
-├── requirements.txt
-├── utils
-│   ├── camera_tools
-│   │   ├── v_show_video.py
-│   │   ├── w_depth_correct.py
-│   │   ├── w_newChessCalibrator.py
-│   │   ├── w_new_u_turn.py
-│   │   ├── w_pickTransform.py
-│   │   ├── w_plot.py
-│   │   └── y_test_image_processing.py
-│   └── motor_lib
-│       ├── BTS7960.pdf
-│       ├── README.md
-│       ├── controller.py
-│       ├── driver.py
-│       ├── driver_test.py
-│       ├── old_controller.py
-│       └── pair.sh
-├── y_data_extractor.py
-├── y_hsv_picker.py
-├── z_cnn_driver.py
-└── z_opencv_driver.py
-
 ```
 
 ## Authors
@@ -224,24 +168,6 @@ For more ways of using the LSD repository, click [here](https://github.com/wofly
 
 ## Contributing and Forking
 
-While we are all for contributing in open-source projects, we will not be accepting any outside contributions due to the nature of the competition. However, you are welcome to fork the code and make your own modifications as per usual.
-
 Before making modifications in your own cloned repo or fork, make sure to run `pip install -r requirements.txt` and update `.gitignore` to your own needs.
 
-That said, if you really *really* ***really*** want to contribute, open a pull request and we'll review it.
-
-See `z_opencv_driver.py` for the pure OpenCV implementation of our custom lane detection and motor calculation algorithm. Our convolutional neural network's trained model has not been uploaded to the repository as of yet, but the basis for using the model to drive can be found at `z_cnn_driver.py`. Training data was extracted by using `y_data_extractor.py`. To pick the HSV values accurately for the `OpenCV_Driver` class, you can use the `y_hsv_picker.py` tool.
-
-`x_test.py` is only used for testing in a Windows environment when the robot is not available, and simulates the robot's movements through text prompts.
-
-
-## Feedback
-
-If you have any suggestions for our project and competition, you can reach us  from our website [here](https://aboutodyssey.web.app/). Alternatively, you can open an issue on our repository.
-
 ![our robot](https://github.com/woflydev/odyssey_cnn/blob/main/readme/robit.jpg)
-
-
-## Support
-
-This software is provided 'AS-IS', under absolutely no warranty. We are not responsible for any damage, thermonuclear war, or job firings from using this software. We will **not** be providing support for issues that arise within code. This project was coded in Python 3.9.13.
