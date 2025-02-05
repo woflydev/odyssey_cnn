@@ -12,7 +12,7 @@ The winning algorithm we ended up using is located in [woflydev/odyssey_lsd](htt
 
 # About Us (2025 Update)
 
-The Odyssey Robotics brand and team has been retired. Our old website can still be accessed [here](https://aboutodyssey.web.app).
+The Odyssey Robotics brand and team has been retired, but most of our members are continuing as [Theseus Robotics](https://theseusrobotics.org). Our old website can still be accessed [here](https://aboutodyssey.web.app).
 Visit [our new website](https://theseusrobotics.org) to learn more about us and the team.
 
 # About Odyssey Robotics
